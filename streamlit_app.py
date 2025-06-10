@@ -322,7 +322,7 @@ def main():
     """Main application entry point."""
     
     # Header
-    st.title("🎯 AWS SA Presentation Script Generator")
+    st.title("🎯 AWS PPTX Presentation Script Generator")
     st.markdown("**Professional presentation scripts powered by Claude 3.7 Sonnet multimodal AI**")
     
     # Initialize session state

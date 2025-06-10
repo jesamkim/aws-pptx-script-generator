@@ -115,7 +115,15 @@ class ClaudeScriptGenerator:
         # Determine language instruction
         language_instruction = ""
         if request.language == 'Korean':
-            language_instruction = "IMPORTANT: Generate all content in Korean language. Use natural, professional Korean suitable for business presentations."
+            language_instruction = """IMPORTANT: Generate all content in Korean language. Use natural, professional Korean suitable for business presentations.
+
+**Korean Style Guidelines:**
+- Use varied transition expressions instead of repeating "이제" (now)
+- Alternative transitions: "다음으로", "계속해서", "여기서", "한편", "또한", "그리고", "더불어"
+- Avoid starting each slide with greetings - the presentation has already begun
+- Use natural Korean business presentation flow
+- Vary sentence structures to avoid monotony
+- Use appropriate honorifics and professional language"""
         else:
             language_instruction = "Generate all content in English language. Use natural, professional English suitable for business presentations."
         
@@ -163,6 +171,9 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
 5. Apply audience communication style matching the selected style
 6. Adjust explanation depth according to the technical level
 7. Structure content and emphasis points according to presentation type
+8. **IMPORTANT**: Do NOT start with greetings like "안녕하세요" or "Hello" - assume the presentation has already begun
+9. **IMPORTANT**: Avoid overusing transition words like "이제" (now), "그럼" (then), "자" (well) - use varied transitions
+10. Create smooth, natural flow without repetitive opening phrases
 
 **Output Format:**
 Please respond in the following JSON format:
@@ -376,7 +387,7 @@ AWS 서비스: {', '.join(aws_services[:10]) if aws_services else '해당 없음
 오늘은 {main_topic}에 대해 함께 알아보는 시간을 갖겠습니다.
 {duration}분 동안 실무에 바로 적용할 수 있는 내용들을 중심으로 말씀드리겠습니다.
 
-그럼 시작하겠습니다.
+시작하겠습니다.
 ```
 
 ---
