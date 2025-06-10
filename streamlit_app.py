@@ -1,4 +1,4 @@
-"""AWS SA Presentation Script Generator - Main Streamlit Application.
+"""AWS PPTX Presentation Script Generator - Main Streamlit Application.
 
 This is the main entry point for the AWS SA Presentation Script Generator,
 providing an 8-step wizard interface for generating professional presentation scripts.
@@ -16,7 +16,7 @@ logger.add("logs/app.log", rotation="1 day", retention="7 days", level="INFO")
 
 # Configure page
 st.set_page_config(
-    page_title="AWS SA Presentation Script Generator",
+    page_title="AWS PPTX Presentation Script Generator",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -211,11 +211,23 @@ def generate_content_aware_script(analysis_result, persona_data, presentation_pa
         # Create mock presentation analysis
         presentation_analysis = MockPresentationAnalysis(analysis_result)
         
-        # Generate script using Claude
+        # Merge analysis result settings with presentation params for comprehensive context
+        enhanced_params = {
+            **presentation_params,
+            'technical_level': analysis_result.get('technical_level', 'intermediate'),
+            'presentation_type': analysis_result.get('presentation_type', 'technical_overview'),
+            'target_audience_analysis': analysis_result.get('target_audience', 'technical_teams'),
+            'recommended_script_style': analysis_result.get('recommended_script_style', 'conversational'),
+            'main_topic': analysis_result.get('main_topic', 'AWS Presentation'),
+            'key_themes': analysis_result.get('key_themes', []),
+            'aws_services_mentioned': analysis_result.get('aws_services_mentioned', [])
+        }
+        
+        # Generate script using Claude with enhanced parameters
         script_content = claude_generator.generate_complete_presentation_script(
             presentation_analysis=presentation_analysis,
             persona_data=persona_data,
-            presentation_params=presentation_params,
+            presentation_params=enhanced_params,
             mcp_enhanced_services=analysis_result.get('mcp_enhanced_services')
         )
         
@@ -417,6 +429,54 @@ def main():
                 for recommendation in result['mcp_recommendations'][:3]:
                     st.info(f"💡 {recommendation}")
             
+            # Allow user to modify AI analysis results
+            st.subheader("🔧 Adjust Analysis Results")
+            st.markdown("*Review and modify the AI analysis if needed:*")
+            
+            col3, col4 = st.columns(2)
+            
+            with col3:
+                # Allow user to override technical level
+                technical_level = st.selectbox(
+                    "Technical Level",
+                    ["beginner", "intermediate", "advanced"],
+                    index=["beginner", "intermediate", "advanced"].index(result.get('technical_level', 'intermediate')),
+                    help="Adjust the technical complexity level for your audience"
+                )
+                
+                # Allow user to override presentation type
+                presentation_type = st.selectbox(
+                    "Presentation Type",
+                    ["technical_overview", "business_case", "deep_dive", "workshop", "demo"],
+                    index=0,
+                    help="Select the type of presentation"
+                )
+                
+            with col4:
+                # Allow user to override target audience
+                target_audience_analysis = st.selectbox(
+                    "Primary Audience",
+                    ["technical_teams", "business_stakeholders", "executives", "mixed_audience"],
+                    index=0,
+                    help="Who is your primary audience?"
+                )
+                
+                # Allow user to override script style
+                script_style = st.selectbox(
+                    "Script Style",
+                    ["conversational", "technical", "formal", "educational"],
+                    index=["conversational", "technical", "formal", "educational"].index(result.get('recommended_script_style', 'conversational')),
+                    help="Choose the tone and style for your script"
+                )
+            
+            # Update analysis result with user modifications
+            st.session_state.analysis_result.update({
+                'technical_level': technical_level,
+                'presentation_type': presentation_type,
+                'target_audience': target_audience_analysis,
+                'recommended_script_style': script_style
+            })
+            
             if st.button("✅ Continue to Presenter Info", type="primary"):
                 st.session_state.step = 3
                 st.rerun()
@@ -568,13 +628,30 @@ def main():
                         del st.session_state[key]
                     st.rerun()
             
-            # Script statistics
+            # Script statistics with improved time estimation
             st.subheader("📊 Script Statistics")
+            
+            # Calculate more accurate reading time
+            script_text = st.session_state.generated_script
+            word_count = len(script_text.split())
+            char_count = len(script_text)
+            
+            # Estimate speaking time (average 150-180 words per minute)
+            estimated_speaking_time = word_count / 165  # Using middle value
+            target_duration = st.session_state.presentation_params.get('duration', 30)
+            
+            # Time difference analysis
+            time_difference = estimated_speaking_time - target_duration
+            time_status = "✅ 적정" if abs(time_difference) <= 2 else ("⚠️ 길음" if time_difference > 0 else "⚠️ 짧음")
+            
             script_stats = {
-                "Total Characters": len(st.session_state.generated_script),
-                "Estimated Reading Time": f"{len(st.session_state.generated_script) // 1000} minutes",
+                "Total Characters": f"{char_count:,}",
+                "Total Words": f"{word_count:,}",
+                "Estimated Speaking Time": f"{estimated_speaking_time:.1f} minutes",
+                "Target Duration": f"{target_duration} minutes",
+                "Time Status": f"{time_status} ({time_difference:+.1f}분)",
                 "Language": st.session_state.presentation_params.get('language', 'English'),
-                "Target Duration": f"{st.session_state.presentation_params.get('duration', 30)} minutes"
+                "Words per Minute": f"{word_count/target_duration:.0f} (target: 150-180)"
             }
             
             for stat, value in script_stats.items():
