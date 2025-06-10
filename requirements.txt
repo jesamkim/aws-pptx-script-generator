@@ -1,0 +1,32 @@
+# Core Dependencies
+streamlit>=1.28.0  # Web interface framework
+python-pptx>=0.6.21  # PowerPoint file processing
+Pillow>=10.0.0  # Image processing and conversion
+boto3>=1.28.0  # AWS SDK for Python
+anthropic>=0.5.0  # Claude API client
+pandas>=2.0.0  # Data manipulation and analysis
+numpy>=1.24.0  # Numerical operations
+
+# AWS and AI Dependencies
+aws-strands-agents>=1.0.0  # Agent SDK for workflow orchestration
+python-dotenv>=1.0.0  # Environment variable management
+pydantic>=2.0.0  # Data validation and settings
+pydantic-settings>=2.0.0  # Settings management
+
+# Image and Document Processing
+opencv-python>=4.8.0  # Advanced image processing
+pytesseract>=0.3.10  # OCR capabilities (optional)
+
+# Development and Testing
+pytest>=7.4.0  # Testing framework
+black>=23.0.0  # Code formatting
+flake8>=6.0.0  # Code linting
+mypy>=1.5.0  # Type checking
+pytest-cov>=4.1.0  # Test coverage reporting
+
+# Documentation and Utilities
+rich>=13.0.0  # Enhanced terminal output
+loguru>=0.7.0  # Logging utilities
+tqdm>=4.66.0  # Progress bars
+python-magic>=0.4.27  # File type detection
+requests>=2.31.0  # HTTP requests for MCP
