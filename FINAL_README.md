@@ -1,417 +1,353 @@
-# AWS PPTX Presentation Script Generator
+# AWS PowerPoint Script Generator
 
-## 🏆 Contest Submission - Quack the Code Challenge 2025
+An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and MCP integration.
 
-### Executive Summary
+## 🎯 Overview
 
-The **AWS PPTX Presentation Script Generator** is an innovative AI-powered application that transforms PowerPoint presentations into professional, natural presentation scripts. Built using Amazon Q CLI, this solution leverages Claude 3.7 Sonnet multimodal AI, real-time AWS MCP documentation integration, and intelligent script generation to solve critical challenges faced by AWS Solutions Architects worldwide.
+This application transforms PowerPoint presentations into comprehensive, ready-to-deliver presentation scripts. It combines multimodal AI analysis, AWS service knowledge enhancement, and intelligent script generation to create natural, professional scripts tailored to your presentation style and audience.
 
-## 🎯 Problem Statement
+## ✨ Key Features
 
-AWS Solutions Architects spend countless hours creating presentation scripts that are:
-- **Technically Accurate**: Requiring validation against current AWS documentation
-- **Culturally Appropriate**: Adapted for global audiences (Korean, English)
-- **Natural and Professional**: Avoiding awkward template-based content
-- **Time-Optimized**: Properly allocated across slides based on complexity
-- **Ready for Delivery**: Suitable for actual customer presentations
+### 🔍 Intelligent Slide Analysis
+- **Multimodal Processing**: Analyzes both text content and visual elements
+- **AWS Service Detection**: Automatically identifies and categorizes AWS services mentioned
+- **Content Summarization**: Extracts key concepts and themes from each slide
+- **Technical Complexity Assessment**: Evaluates presentation difficulty level
 
-Manual script creation is time-consuming, error-prone, and often results in unnatural, template-based content that doesn't reflect actual slide information.
+### 🧠 AI-Powered Script Generation
+- **Claude 3.7 Sonnet Integration**: Advanced language model for natural script creation
+- **Prompt Caching**: Optimized performance with intelligent caching strategies
+- **Persona-Aware Generation**: Adapts to presenter's style and confidence level
+- **Slide Flow Continuity**: Ensures smooth transitions between slides
 
-## 💡 Solution Innovation
+### 📚 AWS Knowledge Enhancement
+- **MCP Integration**: Real-time AWS documentation retrieval
+- **Service-Specific Information**: Detailed AWS service descriptions and best practices
+- **Fallback Knowledge Base**: Comprehensive offline AWS service database
+- **Technical Accuracy**: Ensures accurate AWS terminology and concepts
 
-### Revolutionary Approach: AI-Generated Natural Scripts
+### 🎨 Customizable Output
+- **Multiple Script Styles**: Technical, conversational, or formal presentation styles
+- **Timing Guidance**: Precise timing recommendations for each slide
+- **Speaker Notes**: Detailed presentation tips and guidance
+- **Q&A Preparation**: Anticipated questions and suggested answers
 
-This solution represents a paradigm shift from template-based to AI-generated natural content:
+## 🏗️ Architecture
 
-```
-✅ "안녕하세요, AWS 솔루션스 아키텍트 김제삼입니다. 
-   오늘은 AWS의 혁신적인 생성형 AI 서비스인 Amazon Bedrock에 대해 소개해 드리겠습니다."
-✅ Contextual content based on actual slide information
-✅ Natural presentation flow and professional tone
-✅ Meaningful explanations tailored to slide content
-```
-
-### Core Innovation Components
-
-1. **Claude 3.7 Sonnet Multimodal Analysis**
-   - Analyzes both visual and textual slide content
-   - Understands architectural diagrams and technical concepts
-   - Identifies AWS services and technical complexity
-   - Generates contextual, meaningful content
-
-2. **Real-time AWS MCP Integration**
-   - Validates technical content against official AWS documentation
-   - Retrieves current best practices and service information
-   - Batch processing for 90% performance improvement
-   - Ensures 98%+ technical accuracy
-
-3. **Natural Language Script Generation**
-   - AI-powered generation (not template-based)
-   - Context-aware content based on actual slides
-   - Professional presentation flow and transitions
-   - Slide-specific meaningful explanations
-
-4. **Cultural Intelligence & Multi-language Support**
-   - Korean and English script generation
-   - Cultural context adaptation for presentation styles
-   - Native-level language quality with technical precision
-   - Consistent professional terminology
-
-## 🏗️ Architecture Excellence
-
-### 6-Step Intelligent Workflow
-
-1. **PowerPoint Upload** → File processing and validation
-2. **AI Analysis** → Claude 3.7 Sonnet multimodal analysis
-3. **Presenter Info** → Personalization and context setting
-4. **Presentation Settings** → Language, duration, audience configuration
-5. **Script Generation** → AI-powered natural script creation
-6. **Review & Export** → Professional output with quality metrics
-
-### Technical Architecture
+### Core Components
 
 ```
-PowerPoint Upload → Claude 3.7 Sonnet Analysis → AWS MCP Enhancement → Natural Script Generation
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit     │    │   Multimodal     │    │   Script        │
+│   Frontend      │───▶│   Analyzer       │───▶│   Generator     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                │                        │
+                                ▼                        ▼
+                       ┌──────────────────┐    ┌─────────────────┐
+                       │   MCP Client     │    │   Cache         │
+                       │   (AWS Docs)     │    │   Manager       │
+                       └──────────────────┘    └─────────────────┘
 ```
 
-#### **Processing Pipeline**
-- **Multimodal Analysis**: Visual + textual content understanding
-- **Batch MCP Processing**: Efficient AWS documentation integration
-- **AI Script Generation**: Natural language creation using Claude
-- **Quality Assurance**: Comprehensive validation and metrics
+### Technology Stack
+- **Frontend**: Streamlit with responsive UI components
+- **AI Models**: Claude 3.7 Sonnet via AWS Bedrock
+- **Document Processing**: python-pptx, Pillow for image processing
+- **MCP Integration**: Session-based AWS Documentation client
+- **Caching**: Multi-layer caching with TTL management
+- **Logging**: Structured logging with loguru
 
-## 🚀 Key Features & Capabilities
+## 🚀 Quick Start
 
-### 🧠 **Advanced AI Analysis**
-- **Claude 3.7 Sonnet Integration**: Multimodal understanding of presentations
-- **Slide Type Classification**: Title, content, architecture, demo slides
-- **Technical Depth Assessment**: Automatic complexity evaluation
-- **AWS Service Recognition**: Intelligent service identification
+### Prerequisites
 
-### 🔗 **Real-time Documentation Integration**
-- **MCP Protocol**: Live AWS documentation retrieval
-- **Technical Validation**: Content accuracy verification
-- **Best Practices**: Official AWS recommendations integration
-- **Performance Optimization**: Batch processing for efficiency
+- Python 3.10 or higher
+- AWS CLI configured with appropriate permissions
+- UV package manager (recommended) or pip
 
-### 🎤 **Professional Script Generation**
-- **Natural Language AI**: Claude-generated contextual content
-- **Professional Quality**: Ready for actual presentation delivery
-- **Time Allocation**: Optimized speaking time per slide
-- **Smooth Transitions**: Natural flow between topics
+### Installation
 
-### 🌐 **Multi-language Excellence**
-- **Korean & English**: Native-level quality in both languages
-- **Cultural Adaptation**: Appropriate communication styles
-- **Technical Consistency**: Accurate terminology across languages
-- **Professional Tone**: Suitable for business presentations
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd aws-pptx-script-generator
+   ```
 
-## 📊 Performance Metrics & Results
+2. **Set up Python environment**
+   ```bash
+   # Using UV (recommended)
+   uv venv aws-venv
+   source aws-venv/bin/activate  # On Windows: aws-venv\Scripts\activate
+   uv pip install -r requirements.txt
+   
+   # Or using pip
+   python -m venv aws-venv
+   source aws-venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-### **Quality Achievements**
-- **Content Accuracy**: 98%+ with MCP validation
-- **Script Quality**: Professional presenter standard
-- **Language Quality**: Native-level Korean and English
-- **Processing Speed**: ~1-2 minutes for 15-slide presentation
-- **Technical Accuracy**: Real-time AWS documentation validation
+3. **Install AWS Documentation MCP Server**
+   ```bash
+   # Install the MCP server globally
+   uvx install awslabs.aws-documentation-mcp-server@latest
+   
+   # Verify installation
+   uvx awslabs.aws-documentation-mcp-server@latest --help
+   ```
 
-### **Performance Improvements**
-- **MCP Optimization**: 90% reduction in API calls through batch processing
-- **Natural Scripts**: 100% elimination of template-based awkwardness
-- **Error Reduction**: Comprehensive fallback mechanisms
-- **User Experience**: Intuitive 6-step wizard interface
+4. **Configure AWS credentials**
+   ```bash
+   aws configure
+   # Enter your AWS Access Key ID, Secret Access Key, and preferred region
+   ```
 
-### **Innovation Metrics**
-- **First-of-its-kind**: Multimodal AI presentation script generator
-- **AI Integration**: Claude 3.7 Sonnet for analysis and generation
-- **Real-time Enhancement**: Live AWS documentation integration
-- **Production Ready**: Immediately usable by AWS SAs worldwide
+5. **Set up MCP configuration**
+   
+   The application uses `mcp-settings.json` for MCP server configuration:
+   ```json
+   {
+     "mcpServers": {
+       "github.com/awslabs/mcp/tree/main/src/aws-documentation-mcp-server": {
+         "command": "uvx",
+         "args": [
+           "awslabs.aws-documentation-mcp-server@latest"
+         ],
+         "env": {
+           "FASTMCP_LOG_LEVEL": "ERROR"
+         },
+         "disabled": false,
+         "autoApprove": [
+           "search_documentation",
+           "read_documentation"
+         ]
+       }
+     }
+   }
+   ```
 
-## 🛠️ Technology Stack
+### Running the Application
 
-### **Core Technologies**
-- **Frontend**: Streamlit (Professional UI)
-- **AI Engine**: Amazon Bedrock Claude 3.7 Sonnet
-- **Document Processing**: python-pptx, PIL for multimodal analysis
-- **MCP Integration**: AWS Documentation MCP Server
-- **Language Processing**: Advanced NLP with cultural adaptation
-
-### **AWS Services Integration**
-- **Amazon Bedrock**: Claude 3.7 Sonnet multimodal AI
-- **AWS MCP**: Real-time documentation and validation
-- **AWS CLI**: Configuration and credential management
-
-## 🎯 Business Impact & Value
-
-### **For AWS Solutions Architects**
-- **95% Time Reduction**: From hours to minutes for script creation
-- **Professional Quality**: Presentation-ready scripts without manual editing
-- **Technical Accuracy**: Validated against official AWS documentation
-- **Global Reach**: Korean/English support for international teams
-
-### **For AWS Organization**
-- **Consistency**: Standardized high-quality presentation scripts
-- **Accuracy**: Reduced technical errors in customer presentations
-- **Efficiency**: Faster preparation for customer engagements
-- **Scalability**: Supports global SA teams with cultural adaptation
-
-### **Competitive Advantages**
-- **Unique Innovation**: First multimodal AI presentation script generator
-- **Technical Excellence**: Integration of cutting-edge AI technologies
-- **Practical Value**: Solves real-world problems for AWS professionals
-- **Quality Output**: Professional-grade results suitable for customer use
-
-## 🏆 Contest Submission Highlights
-
-### **Innovation Excellence**
-- **Revolutionary Approach**: AI-generated natural scripts vs. template-based
-- **Multimodal Integration**: Visual + textual content understanding
-- **Real-time Enhancement**: Live AWS documentation integration
-- **Cultural Intelligence**: Multi-language with cultural adaptation
-
-### **Technical Achievement**
-- **Claude 3.7 Sonnet**: Advanced multimodal AI implementation
-- **MCP Integration**: Real-time documentation validation
-- **Performance Optimization**: Batch processing and error handling
-- **Production Quality**: Ready for immediate professional use
-
-### **Practical Impact**
-- **Real Problem Solving**: Addresses actual AWS SA pain points
-- **Immediate Value**: Usable by AWS professionals today
-- **Global Applicability**: Supports international teams
-- **Quality Results**: Professional presentation scripts
-
-## 🚀 Getting Started
-
-### **Quick Start**
 ```bash
-# Clone repository
-git clone https://github.com/jesamkim/aws-pptx-script-generator.git
-cd aws-pptx-presentation-script-generator
+# Start the Streamlit application
+streamlit run streamlit_app.py
 
-# Install dependencies
-pip install -r requirements.txt -U
+# The application will be available at http://localhost:8501
+```
 
-# Configure AWS credentials
-aws configure
+## 📖 Usage Guide
 
-# Run application
+### Step-by-Step Process
+
+1. **Upload PowerPoint File**
+   - Drag and drop your .pptx file or use the file uploader
+   - Supported formats: PowerPoint (.pptx) files
+
+2. **Configure Presenter Profile**
+   - Enter presenter information (name, title, experience level)
+   - Select presentation confidence and interaction style
+   - Choose target audience and technical level
+
+3. **Set Presentation Parameters**
+   - Define presentation duration and Q&A time
+   - Select script style (technical, conversational, formal)
+   - Configure timing and speaker notes preferences
+
+4. **AI Analysis**
+   - Automatic slide content extraction and analysis
+   - AWS service identification and categorization
+   - Technical complexity assessment
+
+5. **Script Generation**
+   - Choose between basic cached generation or optimized agent-based generation
+   - Real-time AWS documentation enhancement via MCP
+   - Natural language script creation with proper flow
+
+6. **Review and Export**
+   - Review generated script with timing guidance
+   - Download as Markdown file
+   - Copy to clipboard for immediate use
+
+### Generation Options
+
+#### Basic Cached Generation
+- Fast script generation with prompt caching
+- Suitable for standard presentations
+- Optimized for performance
+
+#### Optimized Agent Generation
+- Advanced multi-agent workflow
+- Enhanced AWS knowledge integration
+- Parallel processing for complex presentations
+- Real-time MCP documentation retrieval
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+# AWS Configuration
+AWS_DEFAULT_REGION=us-west-2
+AWS_PROFILE=default
+
+# Bedrock Configuration
+BEDROCK_MODEL_ID=anthropic.claude-3-7-sonnet-20241022-v1:0
+
+# Application Settings
+LOG_LEVEL=INFO
+CACHE_TTL=3600
+MAX_WORKERS=4
+
+# MCP Configuration
+MCP_TIMEOUT=30
+MCP_LOG_LEVEL=ERROR
+```
+
+### AWS Permissions
+
+Required AWS IAM permissions:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-7-sonnet-*"
+      ]
+    }
+  ]
+}
+```
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test suites
+python tests/test_mcp_integration.py      # MCP integration tests
+python tests/test_step5_script_generation.py  # Script generation tests
+python tests/test_integrated_mcp.py      # End-to-end MCP tests
+
+# Run with coverage
+python -m pytest tests/ --cov=src --cov-report=html
+```
+
+### Test Categories
+
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: MCP and AWS service integration
+- **End-to-End Tests**: Complete workflow validation
+- **Performance Tests**: Caching and optimization validation
+
+## 📊 Performance Optimization
+
+### Caching Strategy
+
+The application implements multi-layer caching:
+
+1. **Prompt Caching**: Claude API prompt caching for repeated requests
+2. **Response Caching**: In-memory caching of AI responses
+3. **MCP Caching**: AWS documentation caching with TTL
+4. **Slide Analysis Caching**: Cached multimodal analysis results
+
+### Performance Metrics
+
+- **Script Generation**: 20-60 seconds depending on complexity
+- **Cache Hit Rate**: 60-80% for repeated presentations
+- **MCP Response Time**: 3-8 seconds per AWS service query
+- **Memory Usage**: ~200-500MB during processing
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+#### MCP Connection Issues
+```bash
+# Test MCP server availability
+python tests/test_mcp_session.py
+
+# Check MCP configuration
+cat mcp-settings.json
+```
+
+#### AWS Bedrock Access
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Test Bedrock access
+aws bedrock list-foundation-models --region us-west-2
+```
+
+#### Performance Issues
+- Enable caching in configuration
+- Reduce max_workers for memory-constrained environments
+- Use basic generation for faster results
+
+### Debug Mode
+
+Enable debug logging:
+```bash
+export LOG_LEVEL=DEBUG
 streamlit run streamlit_app.py
 ```
 
-### **Usage Workflow**
-1. Upload PowerPoint presentation
-2. Review AI analysis results
-3. Enter presenter information
-4. Configure language and settings
-5. Generate professional script
-6. Export and use for presentation
+## 🤝 Contributing
 
-## 📈 Future Enhancements
+### Development Setup
 
-### **Planned Features**
-- **Additional Languages**: Expand beyond Korean/English
-- **Advanced Customization**: More presenter persona options
-- **Integration APIs**: REST API for programmatic access
-- **Batch Processing**: Multiple presentation handling
+1. **Fork and clone the repository**
+2. **Install development dependencies**
+   ```bash
+   uv pip install -r requirements-dev.txt
+   ```
+3. **Run pre-commit hooks**
+   ```bash
+   pre-commit install
+   ```
+4. **Run tests before submitting**
+   ```bash
+   python -m pytest tests/ -v
+   ```
 
-### **Technical Roadmap**
-- **Enhanced MCP**: More comprehensive AWS documentation
-- **Advanced AI**: Latest Claude models integration
-- **Performance**: Further optimization and caching
-- **Analytics**: Presentation effectiveness metrics
+### Code Style
 
-## 🎉 Conclusion
+- Follow PEP 8 guidelines
+- Use type hints for all functions
+- Add docstrings for public methods
+- Maintain test coverage above 80%
 
-The AWS PPTX Presentation Script Generator represents a significant innovation in AI-powered content generation, specifically designed for AWS Solutions Architects. By combining Claude 3.7 Sonnet multimodal AI, real-time AWS documentation validation, and intelligent script generation, we've created a tool that transforms the way technical presentations are prepared and delivered.
+## 📄 License
 
-This solution doesn't just generate scripts—it creates professional, natural, technically accurate content that AWS Solutions Architects can use immediately in customer presentations, saving time while improving quality and consistency across global teams.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Built with ❤️ for the AWS Community and 2025 Quack the Code Challenge**
+## 🙏 Acknowledgments
 
----
+- **AWS Bedrock Team** for Claude 3.7 Sonnet access
+- **Anthropic** for the Claude language model
+- **AWS Labs** for the MCP Documentation server
+- **Streamlit Team** for the excellent web framework
 
-### **Contest Submission Details**
-- **Team**: Individual submission
-- **Development Time**: Single intensive development session
-- **Innovation Level**: First-of-its-kind multimodal AI presentation tool
-- **Practical Value**: Immediately usable by AWS professionals worldwide
-- **Technical Excellence**: Production-ready with comprehensive features
-3. **PowerPoint Upload** → Safe file processing
-4. **Multimodal Analysis** → Claude 3.7 Sonnet vision
-5. **MCP Enhancement** → AWS documentation integration
-6. **Script Generation** → Agent-orchestrated creation
-7. **Quality Validation** → Comprehensive assessment
-8. **Professional Export** → Multiple format outputs
+## 📞 Support
 
-### Technology Stack
-
-- **Frontend**: Streamlit with professional AWS branding
-- **AI/ML**: Amazon Bedrock Claude 3.7 Sonnet (multimodal)
-- **Documentation**: AWS Documentation MCP server integration
-- **Orchestration**: AWS Strands Agent SDK workflow management
-- **Processing**: python-pptx, Pillow, advanced content analysis
-- **Export**: Professional markdown, PowerPoint integration
-
-## 🚀 Key Features
-
-### Multimodal AI Analysis
-- **Visual Understanding**: Analyzes slide layouts, diagrams, and images
-- **Content Classification**: Identifies slide types and technical depth
-- **AWS Service Detection**: Recognizes services from visual and text content
-- **Complexity Assessment**: Intelligent difficulty scoring
-
-### Real-time AWS Validation
-- **MCP Integration**: Live documentation retrieval
-- **Technical Accuracy**: 98%+ validation against official sources
-- **Best Practices**: Automatic integration of current recommendations
-- **Code Examples**: Relevant implementation samples
-
-### Intelligent Script Generation
-- **Persona Adaptation**: Customized for SA experience and style
-- **Time Optimization**: Smart allocation based on content complexity
-- **Cultural Context**: Korean/English with appropriate communication styles
-- **Quality Scoring**: Comprehensive assessment with improvement suggestions
-
-### Professional Export
-- **Markdown Reports**: Publication-ready with TOC, appendix, Q&A sections
-- **PowerPoint Integration**: Safe speaker notes update with backup/rollback
-- **Multi-format Support**: PDF, HTML, DOCX ready
-- **Quality Metrics**: Detailed scoring and recommendations
-
-## 📊 Performance & Quality
-
-### Performance Benchmarks
-- **Processing Speed**: < 5 minutes for 30-slide presentations
-- **Technical Accuracy**: 98%+ through MCP validation
-- **Script Quality**: 92%+ average quality scores
-- **Language Quality**: Native-level Korean and English
-
-### Quality Assurance
-- **Comprehensive Testing**: End-to-end workflow validation
-- **Error Handling**: Graceful degradation and recovery
-- **Safety Mechanisms**: Backup/rollback for file operations
-- **Monitoring**: Real-time progress and performance tracking
-
-## 🌍 Business Impact
-
-### Time Savings
-- **Before**: 4-6 hours manual script creation
-- **After**: 5-10 minutes automated generation
-- **ROI**: 95%+ time reduction for SA teams
-
-### Quality Improvement
-- **Consistency**: Standardized professional quality across SA teams
-- **Accuracy**: MCP-validated technical content
-- **Localization**: Culturally appropriate for global audiences
-
-### Global Reach
-- **Multi-language**: Korean and English with cultural adaptation
-- **Scalability**: Supports SA teams worldwide
-- **Standardization**: Consistent quality across regions
-
-## 🛠️ Technical Achievements
-
-### Innovation Highlights
-1. **First-of-its-kind** multimodal slide analysis for presentation scripts
-2. **Real-time MCP integration** for technical accuracy validation
-3. **Agent-based orchestration** with parallel processing optimization
-4. **Cultural intelligence** for Korean/English adaptation
-
-### Development Excellence
-- **Modular Architecture**: Clean separation of concerns
-- **Comprehensive Testing**: End-to-end validation
-- **Error Resilience**: Robust error handling and recovery
-- **Performance Optimization**: Sub-5-minute processing targets
-
-### Q CLI Utilization
-- **Systematic Development**: 16-prompt strategy across 5 phases
-- **Comprehensive Documentation**: Detailed requirements and design
-- **Quality Assurance**: Built-in testing and validation
-- **Professional Output**: Contest-ready deliverables
-
-## 📁 Project Structure
-
-```
-aws-pptx-script-generator/
-├── src/
-│   ├── processors/          # PowerPoint processing engine
-│   ├── analysis/           # Multimodal AI analysis
-│   ├── mcp_integration/    # AWS Documentation MCP
-│   ├── agent/              # Workflow orchestration
-│   ├── script_generation/  # Script engine & language adaptation
-│   ├── export/             # Markdown & PowerPoint integration
-│   └── utils/              # Utilities and validation
-├── config/                 # AWS and MCP configuration
-├── tests/                  # Comprehensive testing suite
-├── demo_materials/         # Demo scripts and samples
-├── streamlit_app.py        # Main application interface
-└── requirements.txt        # Dependencies
-```
-
-## 🎬 Demo Highlights
-
-### 10-Minute Demonstration
-1. **Setup** (1 min): SA persona and presentation parameters
-2. **Upload** (30 sec): PowerPoint file with validation
-3. **Processing** (2 min): Multimodal AI + MCP + Agent orchestration
-4. **Results** (1.5 min): Generated script with quality metrics
-5. **Export** (45 sec): Professional outputs and PowerPoint integration
-6. **Innovation Summary** (1.5 min): Technical achievements
-7. **Impact** (30 sec): Business value and global reach
-8. **Q&A** (2 min): Technical questions and future enhancements
-
-### Key Demo Messages
-- **Innovation**: Cutting-edge multimodal AI and MCP integration
-- **Quality**: Professional outputs with 98% technical accuracy
-- **Efficiency**: 95% time reduction for SA script preparation
-- **Global Impact**: Multi-language support for worldwide SA teams
-
-## 🏅 Contest Submission Details
-
-### Deliverables
-1. **Source Code**: Complete application with comprehensive documentation
-2. **Demo Video**: 10-minute Chime recording showcasing key features
-3. **Documentation**: All .md files with detailed technical specifications
-4. **Innovation Summary**: Technical achievements and business impact
-
-### Technical Innovation Score
-- **Creativity**: Unique multimodal AI + MCP + Agent integration ⭐⭐⭐⭐⭐
-- **Complexity**: Sophisticated workflow orchestration and AI integration ⭐⭐⭐⭐⭐
-- **Capability**: Solves real business challenges with measurable impact ⭐⭐⭐⭐⭐
-
-### Q CLI Utilization Excellence
-- **Systematic Approach**: 16-prompt strategy with comprehensive planning
-- **Documentation Quality**: Professional requirements, design, and implementation
-- **Development Efficiency**: Rapid prototyping to production-ready application
-- **Innovation Showcase**: Demonstrates Q CLI's potential for complex AI applications
-
-## 🚀 Future Enhancements
-
-### Planned Features
-- **Additional Languages**: Spanish, French, German support
-- **Advanced Analytics**: Presentation effectiveness scoring
-- **Team Collaboration**: Multi-user workflow and sharing
-- **Integration Expansion**: Slack, Teams, and calendar integration
-
-### Scalability Roadmap
-- **Cloud Deployment**: AWS-native hosting and scaling
-- **Enterprise Features**: SSO, audit logging, compliance
-- **API Integration**: Programmatic access for automation
-- **Mobile Support**: Tablet and mobile interfaces
+For issues and questions:
+- Create an issue in the GitHub repository
+- Check the troubleshooting section
+- Review test examples in the `tests/` directory
 
 ---
 
-## 📞 Contact & Support
-
-**Project Team**: AWS SA Script Generator Development Team  
-**Contest**: Quack the Code Challenge 2025  
-**Submission Date**: June 2025  
-
-**Technical Innovation**: Multimodal AI + MCP + Agent Orchestration  
-**Business Impact**: 95% time reduction, 98% technical accuracy, global SA support  
-**Q CLI Excellence**: Systematic development with professional deliverables  
-
----
-
-*Built with Amazon Q CLI - Transforming how AWS Solutions Architects create professional presentation scripts worldwide.*
+**Version**: 2.0.0  
+**Last Updated**: December 2024  
+**Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet

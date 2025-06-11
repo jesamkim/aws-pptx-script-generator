@@ -6,10 +6,10 @@ for coordinating complex presentation processing workflows.
 
 import json
 import time
-from typing import Dict, List, Any, Optional, Callable
-from dataclasses import dataclass, asdict
-from enum import Enum
 import asyncio
+from typing import Dict, List, Any, Optional, Callable
+from dataclasses import dataclass, asdict, field
+from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from loguru import logger
 
@@ -103,7 +103,9 @@ class WorkflowExecution:
         total_tasks: Total number of tasks
         current_tasks: Currently executing tasks
         results: Task results dictionary
+        task_results: Detailed task results
         errors: Error messages
+        error: Error message if failed
         progress_callback: Progress update callback
     """
     workflow_id: str
@@ -112,9 +114,11 @@ class WorkflowExecution:
     end_time: Optional[float] = None
     completed_tasks: int = 0
     total_tasks: int = 0
-    current_tasks: List[str] = None
-    results: Dict[str, Any] = None
-    errors: List[str] = None
+    current_tasks: List[str] = field(default_factory=list)
+    results: Dict[str, Any] = field(default_factory=dict)
+    task_results: Dict[str, Any] = field(default_factory=dict)
+    errors: List[str] = field(default_factory=list)
+    error: Optional[str] = None
     progress_callback: Optional[Callable] = None
     
     def __post_init__(self):
@@ -227,6 +231,251 @@ class WorkflowOrchestrator:
                     return True
         
         return False
+    
+    @log_execution_time
+    async def execute_workflow_async(
+        self,
+        workflow_id: str,
+        context: Dict[str, Any]
+    ) -> WorkflowExecution:
+        """Execute workflow asynchronously and return result.
+        
+        Args:
+            workflow_id: ID of workflow to execute
+            context: Execution context
+            
+        Returns:
+            Workflow execution result
+            
+        Raises:
+            ValueError: If workflow not found
+        """
+        if workflow_id not in self.workflow_definitions:
+            raise ValueError(f"Workflow {workflow_id} not found")
+            
+        workflow_def = self.workflow_definitions[workflow_id]
+        execution_id = f"{workflow_id}_{int(time.time())}"
+        
+        # Create workflow execution
+        execution = WorkflowExecution(
+            workflow_id=execution_id,
+            status=WorkflowStatus.RUNNING,
+            total_tasks=len(workflow_def.tasks),
+            start_time=time.time()
+        )
+        
+        try:
+            # Execute tasks with dependency resolution
+            task_results = {}
+            remaining_tasks = workflow_def.tasks.copy()
+            
+            while remaining_tasks:
+                # Find tasks with satisfied dependencies
+                ready_tasks = [
+                    task for task in remaining_tasks
+                    if all(dep in task_results for dep in task.dependencies)
+                ]
+                
+                if not ready_tasks:
+                    await asyncio.sleep(0.1)
+                    continue
+                
+                # Execute ready tasks in parallel
+                futures = []
+                for task in ready_tasks[:workflow_def.max_parallel_tasks]:
+                    task.start_time = time.time()
+                    task.status = TaskStatus.RUNNING
+                    
+                    # Create task context
+                    task_context = {
+                        **context,
+                        "task_results": task_results,
+                        "execution_id": execution_id
+                    }
+                    
+                    # Submit task for execution
+                    future = self.executor.submit(
+                        self._execute_single_task,
+                        task,
+                        task_context
+                    )
+                    futures.append((task, future))
+                
+                # Wait for task completion
+                for task, future in futures:
+                    try:
+                        result = future.result(timeout=task.timeout)
+                        task.result = result
+                        task.status = TaskStatus.COMPLETED
+                        task.end_time = time.time()
+                        task_results[task.task_id] = result
+                        
+                    except Exception as e:
+                        task.error = str(e)
+                        task.status = TaskStatus.FAILED
+                        task.end_time = time.time()
+                        logger.error(f"Task {task.task_id} failed: {str(e)}")
+                        
+                        if task.retry_count > 0:
+                            task.retry_count -= 1
+                            task.status = TaskStatus.RETRYING
+                            remaining_tasks.append(task)
+                        else:
+                            raise
+                    
+                    remaining_tasks.remove(task)
+            
+            # Update execution status
+            execution.status = WorkflowStatus.COMPLETED
+            execution.end_time = time.time()
+            execution.task_results = task_results
+            execution.results = task_results
+            
+            logger.info(f"Workflow completed successfully: {execution_id}")
+            
+        except Exception as e:
+            execution.status = WorkflowStatus.FAILED
+            execution.end_time = time.time()
+            execution.error = str(e)
+            logger.error(f"Workflow execution failed: {execution_id}, error: {str(e)}")
+            raise
+        
+        return execution
+    
+    @log_execution_time
+    async def execute_workflow_async(
+        self,
+        workflow_id: str,
+        context: Dict[str, Any]
+    ) -> WorkflowExecution:
+        """Execute workflow asynchronously and return result.
+        
+        Args:
+            workflow_id: ID of workflow to execute
+            context: Execution context
+            
+        Returns:
+            Workflow execution result
+            
+        Raises:
+            ValueError: If workflow not found
+        """
+        if workflow_id not in self.workflow_definitions:
+            raise ValueError(f"Workflow {workflow_id} not found")
+            
+        workflow_def = self.workflow_definitions[workflow_id]
+        execution_id = f"{workflow_id}_{int(time.time())}"
+        
+        # Create workflow execution
+        execution = WorkflowExecution(
+            workflow_id=execution_id,
+            status=WorkflowStatus.RUNNING,
+            total_tasks=len(workflow_def.tasks),
+            start_time=time.time()
+        )
+        
+        self.active_workflows[execution_id] = execution
+        
+        try:
+            # Execute tasks with dependency resolution
+            task_results = {}
+            remaining_tasks = workflow_def.tasks.copy()
+            
+            while remaining_tasks:
+                # Find tasks with satisfied dependencies
+                ready_tasks = [
+                    task for task in remaining_tasks
+                    if all(dep in task_results for dep in task.dependencies)
+                ]
+                
+                if not ready_tasks:
+                    await asyncio.sleep(0.1)
+                    continue
+                
+                # Execute ready tasks in parallel
+                futures = []
+                for task in ready_tasks[:workflow_def.max_parallel_tasks]:
+                    task.start_time = time.time()
+                    task.status = TaskStatus.RUNNING
+                    execution.current_tasks.append(task.task_id)
+                    
+                    # Create task context
+                    task_context = {
+                        **context,
+                        "task_results": task_results,
+                        "execution_id": execution_id
+                    }
+                    
+                    # Submit task for execution
+                    future = self.executor.submit(
+                        self._execute_single_task,
+                        task,
+                        task_context
+                    )
+                    futures.append((task, future))
+                
+                # Wait for task completion
+                for task, future in futures:
+                    try:
+                        result = future.result(timeout=task.timeout)
+                        task.result = result
+                        task.status = TaskStatus.COMPLETED
+                        task.end_time = time.time()
+                        task_results[task.task_id] = result
+                        execution.completed_tasks += 1
+                        execution.current_tasks.remove(task.task_id)
+                        
+                        # Update progress
+                        if execution.progress_callback:
+                            execution.progress_callback(execution)
+                        
+                    except Exception as e:
+                        task.error = str(e)
+                        task.status = TaskStatus.FAILED
+                        task.end_time = time.time()
+                        execution.errors.append(str(e))
+                        execution.current_tasks.remove(task.task_id)
+                        logger.error(f"Task {task.task_id} failed: {str(e)}")
+                        
+                        if task.retry_count > 0:
+                            task.retry_count -= 1
+                            task.status = TaskStatus.RETRYING
+                            remaining_tasks.append(task)
+                        else:
+                            raise
+                    
+                    remaining_tasks.remove(task)
+            
+            # Update execution status
+            execution.status = WorkflowStatus.COMPLETED
+            execution.end_time = time.time()
+            execution.task_results = task_results
+            execution.results = task_results
+            
+            logger.info(f"Workflow completed successfully: {execution_id}")
+            
+        except Exception as e:
+            execution.status = WorkflowStatus.FAILED
+            execution.end_time = time.time()
+            execution.error = str(e)
+            logger.error(f"Workflow execution failed: {execution_id}, error: {str(e)}")
+            raise
+        finally:
+            if execution_id in self.active_workflows:
+                del self.active_workflows[execution_id]
+        
+        return execution
+    
+    def _execute_single_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Any:
+        """Execute a single task with error handling."""
+        try:
+            # Execute task function
+            result = task.function(context)
+            return result
+            
+        except Exception as e:
+            logger.error(f"Task execution failed: {task.task_id}, error: {str(e)}")
+            raise
     
     @log_execution_time
     def execute_workflow(
@@ -457,7 +706,7 @@ class WorkflowOrchestrator:
         for attempt in range(task.retry_count + 1):
             try:
                 logger.debug(f"Executing task {task.task_id}, attempt {attempt + 1}")
-                result = task.function(**parameters)
+                result = task.function(parameters)
                 return result
                 
             except Exception as e:

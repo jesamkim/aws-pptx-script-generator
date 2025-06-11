@@ -88,6 +88,69 @@ class KnowledgeEnhancer:
         
         logger.info("Initialized knowledge enhancer with AWS documentation integration")
     
+    def enhance_service_knowledge(self, service_name: str) -> Dict[str, Any]:
+        """Enhance knowledge about a specific AWS service.
+        
+        Args:
+            service_name: Name of AWS service
+            
+        Returns:
+            Enhanced service information
+        """
+        try:
+            # Normalize service name
+            normalized_name = self._normalize_service_name(service_name)
+            
+            # Get service documentation from MCP
+            service_docs = self.aws_docs_client.get_service_documentation(normalized_name)
+            
+            if not service_docs:
+                logger.warning(f"No documentation found for service: {service_name}")
+                return {
+                    "service_name": service_name,
+                    "description": "AWS service (documentation not available)",
+                    "use_cases": [],
+                    "best_practices": [],
+                    "related_services": []
+                }
+            
+            # Extract key information from ServiceDocumentation object
+            enhanced_info = {
+                "service_name": service_name,
+                "description": service_docs.description or "",
+                "use_cases": service_docs.use_cases or [],
+                "best_practices": service_docs.best_practices or [],
+                "related_services": service_docs.related_services or [],
+                "documentation_url": service_docs.documentation_url or ""
+            }
+            
+            # Format using templates
+            if enhanced_info["description"]:
+                enhanced_info["formatted_intro"] = self.enhancement_templates["service_intro"].format(
+                    service_name=service_name,
+                    description=enhanced_info["description"]
+                )
+            
+            if enhanced_info["use_cases"]:
+                enhanced_info["formatted_use_cases"] = self.enhancement_templates["use_case"].format(
+                    use_cases=", ".join(enhanced_info["use_cases"][:3])
+                )
+            
+            if enhanced_info["best_practices"]:
+                enhanced_info["formatted_practices"] = [
+                    self.enhancement_templates["best_practice"].format(practice=practice)
+                    for practice in enhanced_info["best_practices"][:3]
+                ]
+            
+            return enhanced_info
+            
+        except Exception as e:
+            logger.error(f"Failed to enhance knowledge for {service_name}: {str(e)}")
+            return {
+                "service_name": service_name,
+                "error": str(e)
+            }
+    
     def _normalize_service_name(self, service_mention: str) -> str:
         """Normalize service name to standard format.
         
@@ -98,6 +161,58 @@ class KnowledgeEnhancer:
             Normalized service name
         """
         service_lower = service_mention.lower().strip()
+        
+        # Check direct match in aliases
+        if service_lower in self.service_aliases:
+            return self.service_aliases[service_lower]
+        
+        # Check partial matches
+        for alias, normalized in self.service_aliases.items():
+            if service_lower in alias or alias in service_lower:
+                return normalized
+        
+        # Return original if no match found
+        return service_mention.strip()
+    
+    def enhance_content(self, content: str, aws_services: List[str]) -> EnhancedContent:
+        """Enhance content with AWS documentation.
+        
+        Args:
+            content: Original content
+            aws_services: List of AWS services mentioned
+            
+        Returns:
+            Enhanced content with AWS documentation
+        """
+        try:
+            enhanced_services = {}
+            
+            # Enhance knowledge for each service
+            for service in aws_services:
+                enhanced_info = self.enhance_service_knowledge(service)
+                if enhanced_info and not enhanced_info.get("error"):
+                    enhanced_services[service] = enhanced_info
+            
+            # Create enhanced content
+            return EnhancedContent(
+                original_content=content,
+                enhanced_services=enhanced_services,
+                enhancement_metadata={
+                    "services_enhanced": len(enhanced_services),
+                    "enhancement_timestamp": time.time()
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Content enhancement failed: {str(e)}")
+            return EnhancedContent(
+                original_content=content,
+                enhanced_services={},
+                enhancement_metadata={
+                    "error": str(e),
+                    "enhancement_timestamp": time.time()
+                }
+            )
         
         # Check aliases first
         if service_lower in self.service_aliases:
