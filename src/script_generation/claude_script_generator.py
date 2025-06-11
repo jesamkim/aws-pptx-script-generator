@@ -53,7 +53,7 @@ class ClaudeScriptGenerator:
         Args:
             enable_caching: Whether to enable prompt caching
         """
-        self.model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+        self.model_id = bedrock_client.config.bedrock_model_id
         self.max_retries = 3
         self.enable_caching = enable_caching
         

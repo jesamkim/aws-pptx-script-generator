@@ -6,7 +6,7 @@ This guide provides detailed installation instructions for the AWS PowerPoint Sc
 
 ### Minimum Requirements
 - **Operating System**: macOS 10.15+, Ubuntu 18.04+, Windows 10+
-- **Python**: 3.10 or higher
+- **Python**: 3.10 or higher (required for AWS Documentation MCP server)
 - **Memory**: 4GB RAM minimum, 8GB recommended
 - **Storage**: 2GB free space
 - **Network**: Internet connection for AWS Bedrock and MCP services
@@ -22,10 +22,10 @@ This guide provides detailed installation instructions for the AWS PowerPoint Sc
 
 #### macOS
 ```bash
-# Install Python via Homebrew
+# Install Python 3.10+ via Homebrew
 brew install python@3.10
 
-# Verify installation
+# Verify installation (should be 3.10 or higher)
 python3 --version
 ```
 
@@ -34,7 +34,7 @@ python3 --version
 # Update package list
 sudo apt update
 
-# Install Python 3.10
+# Install Python 3.10 (required for MCP server compatibility)
 sudo apt install python3.10 python3.10-venv python3.10-pip
 
 # Verify installation
@@ -43,8 +43,9 @@ python3.10 --version
 
 #### Windows
 1. Download Python 3.10+ from [python.org](https://www.python.org/downloads/)
-2. Run installer with "Add Python to PATH" checked
-3. Verify in Command Prompt: `python --version`
+2. **Important**: Select Python 3.10 or higher for MCP server compatibility
+3. Run installer with "Add Python to PATH" checked
+4. Verify in Command Prompt: `python --version` (should show 3.10+)
 
 ### 2. UV Package Manager (Recommended)
 
@@ -149,13 +150,20 @@ The application integrates with AWS Documentation MCP server for real-time AWS s
 
 ### 1. Install MCP Server
 
+**Important**: The AWS Documentation MCP server requires Python 3.10 or higher.
+
 ```bash
+# Verify Python version first (must be 3.10+)
+python --version
+
 # Install globally using uvx
 uvx install awslabs.aws-documentation-mcp-server@latest
 
 # Verify installation
 uvx awslabs.aws-documentation-mcp-server@latest --help
 ```
+
+If you encounter Python version errors, ensure you have Python 3.10+ installed before proceeding.
 
 ### 2. Configure MCP Settings
 
@@ -311,10 +319,10 @@ streamlit run streamlit_app.py
 
 #### Python Version Issues
 ```bash
-# Check Python version
+# Check Python version (must be 3.10+)
 python --version
 
-# If version is < 3.10, install newer version
+# If version is < 3.10, install newer version for MCP compatibility
 # Follow Python installation steps above
 ```
 
@@ -392,4 +400,4 @@ If you encounter issues during installation:
 
 **Installation Guide Version**: 2.0.0  
 **Last Updated**: December 2024  
-**Compatibility**: Python 3.10+, AWS Bedrock, MCP 2024-11-05
+**Compatibility**: Python 3.10+ (required), AWS Bedrock, MCP 2024-11-05

@@ -47,13 +47,13 @@ class SlideScriptRequest:
 class ClaudeScriptGeneratorCached:
     """Natural script generator using Claude 3.7 Sonnet with prompt caching."""
     
-    def __init__(self, enable_caching: bool = True):
-        """Initialize Claude script generator with caching support.
+    def __init__(self, enable_caching: bool = False):  # 기본값을 False로 변경
+        """Initialize Claude script generator with optional caching.
         
         Args:
-            enable_caching: Whether to enable prompt caching
+            enable_caching: Whether to enable prompt caching (default: False for stability)
         """
-        self.model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+        self.model_id = bedrock_client.config.bedrock_model_id
         self.max_retries = 3
         self.enable_caching = enable_caching
         
@@ -69,7 +69,10 @@ class ClaudeScriptGeneratorCached:
         else:
             self.cache_manager = None
             
-        logger.info(f"Initialized Claude script generator with caching: {enable_caching}")
+        if self.enable_caching and self.cache_manager:
+            logger.info(f"Initialized Claude script generator with caching: {enable_caching}")
+        else:
+            logger.info(f"Initialized Claude script generator without caching for better stability")
     
     def _get_static_prompt_content(self, 
                                  presentation_context: str,
@@ -88,7 +91,15 @@ class ClaudeScriptGeneratorCached:
         # Determine language instruction
         language_instruction = ""
         if language == 'Korean':
-            language_instruction = """IMPORTANT: Generate all content in Korean language. Use natural, professional Korean suitable for business presentations.
+            language_instruction = """CRITICAL LANGUAGE REQUIREMENT: Generate ALL content in Korean language ONLY. 
+
+**MANDATORY Korean Generation Rules:**
+- Every single word, sentence, and phrase must be in Korean
+- Use natural, professional Korean suitable for business presentations
+- Do NOT mix English and Korean - use Korean throughout
+- Technical terms should be explained in Korean with English terms in parentheses if necessary
+- All timing notes, speaker notes, and instructions must be in Korean
+- Headers and formatting text must be in Korean
 
 **Korean Style Guidelines:**
 - Use varied transition expressions instead of repeating "이제" (now)
@@ -96,7 +107,9 @@ class ClaudeScriptGeneratorCached:
 - Avoid starting each slide with greetings - the presentation has already begun
 - Use natural Korean business presentation flow
 - Vary sentence structures to avoid monotony
-- Use appropriate honorifics and professional language"""
+- Use appropriate honorifics and professional language
+
+**IMPORTANT: If you generate ANY English content when Korean is requested, this is a FAILURE. All content must be 100% Korean."""
         else:
             language_instruction = "Generate all content in English language. Use natural, professional English suitable for business presentations."
         
@@ -140,6 +153,99 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
 """
         
         return static_content
+    
+    def _generate_script_header_with_timing(self,
+                                           persona_data: Dict[str, str],
+                                           presentation_params: Dict[str, Any],
+                                           time_plan: Any,
+                                           main_topic: str,
+                                           language: str) -> str:
+        """Generate script header with intelligent timing information.
+        
+        Args:
+            persona_data: Presenter information
+            presentation_params: Presentation parameters
+            time_plan: PresentationTimePlan object
+            main_topic: Main presentation topic
+            language: Target language
+            
+        Returns:
+            Formatted script header with timing details
+        """
+        full_name = persona_data.get('full_name', 'Presenter')
+        duration = presentation_params.get('duration', 30)
+        target_audience = presentation_params.get('target_audience', 'Technical')
+        technical_level = presentation_params.get('technical_level', 'intermediate')
+        script_style = presentation_params.get('recommended_script_style', 'conversational')
+        
+        # Create timing breakdown
+        timing_breakdown = []
+        for allocation in time_plan.slide_allocations:
+            timing_breakdown.append(
+                f"  - Slide {allocation.slide_number} ({allocation.slide_type}): {allocation.allocated_minutes:.1f} min"
+            )
+        
+        timing_breakdown_text = "\n".join(timing_breakdown) if timing_breakdown else "  - Equal distribution applied"
+        
+        # Generate header based on language
+        if language == 'Korean':
+            header = f"""# {full_name}의 {main_topic} 발표 스크립트
+
+## 📋 발표 개요
+- **발표 시간**: {duration}분
+- **대상 청중**: {target_audience}
+- **언어**: 한국어
+- **주제**: {main_topic}
+- **슬라이드 수**: {len(time_plan.slide_allocations)}개
+- **스크립트 생성**: Claude 3.7 Sonnet 지능형 시간 배분
+
+## ⏰ 동적 타이밍 계획
+- **콘텐츠 시간**: {time_plan.content_duration}분
+- **버퍼 시간**: {time_plan.buffer_time:.1f}분
+- **타이밍 전략**: {time_plan.timing_strategy}
+
+### 슬라이드별 시간 배분:
+{timing_breakdown_text}
+
+## 🎯 발표자 가이드
+- **발표 자신감**: {persona_data.get('presentation_confidence', 'Comfortable')}
+- **상호작용 스타일**: {persona_data.get('interaction_style', 'Conversational')}
+- **기술 수준**: {technical_level}
+- **스크립트 스타일**: {script_style}
+
+## 📢 **발표 스크립트**
+
+"""
+        else:
+            header = f"""# {full_name}'s {main_topic} Presentation Script
+
+## 📋 Presentation Overview
+- **Presentation Duration**: {duration} minutes
+- **Target Audience**: {target_audience}
+- **Language**: English
+- **Topic**: {main_topic}
+- **Number of Slides**: {len(time_plan.slide_allocations)} slides
+- **Script Generation**: Claude 3.7 Sonnet with Intelligent Time Allocation
+
+## ⏰ Dynamic Timing Plan
+- **Content Duration**: {time_plan.content_duration} minutes
+- **Buffer Time**: {time_plan.buffer_time:.1f} minutes
+- **Timing Strategy**: {time_plan.timing_strategy}
+
+### Slide Time Allocations:
+{timing_breakdown_text}
+
+## 🎯 Presenter Guide
+- **Presentation Confidence**: {persona_data.get('presentation_confidence', 'Comfortable')}
+- **Interaction Style**: {persona_data.get('interaction_style', 'Conversational')}
+- **Technical Level**: {technical_level}
+- **Script Style**: {script_style}
+
+## 📢 **Presentation Script**
+
+"""
+        
+        return header
     
     def _invoke_claude_with_cache(self,
                                 static_content: str,
@@ -267,7 +373,7 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
         presentation_params: Dict[str, Any],
         mcp_enhanced_services: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Generate complete presentation script using Claude with caching.
+        """Generate complete presentation script using Claude with intelligent time allocation.
         
         Args:
             presentation_analysis: Complete presentation analysis
@@ -276,7 +382,7 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
             mcp_enhanced_services: Enhanced AWS service information
             
         Returns:
-            Complete natural presentation script
+            Complete natural presentation script with dynamic timing
         """
         try:
             # Extract basic parameters
@@ -293,7 +399,6 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
             aws_services = presentation_params.get('aws_services_mentioned', [])
             
             # Extract presentation settings
-            time_per_slide = presentation_params.get('time_per_slide', 2.0)
             include_qa = presentation_params.get('include_qa', True)
             qa_duration = presentation_params.get('qa_duration', 10)
             technical_depth = presentation_params.get('technical_depth', 3)
@@ -302,14 +407,25 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
             include_speaker_notes = presentation_params.get('include_speaker_notes', True)
             include_qa_prep = presentation_params.get('include_qa_prep', True)
             
-            # Calculate effective content duration
-            content_duration = duration - (qa_duration if include_qa else 0)
+            # Create intelligent time allocation plan
+            from src.analysis.slide_time_planner import SlideTimePlanner
+            time_planner = SlideTimePlanner()
             
-            # Create presentation context
+            time_plan = time_planner.create_time_plan(
+                presentation_analysis=presentation_analysis,
+                total_duration=duration,
+                qa_duration=qa_duration if include_qa else 0,
+                buffer_percentage=0.1  # 10% buffer time
+            )
+            
+            logger.info(f"Created dynamic time plan: {time_plan.timing_strategy}")
+            
+            # Create presentation context with timing strategy
             presentation_context = f"""
 Topic: {main_topic}
 Total Slides: {len(presentation_analysis.slide_analyses)} slides
 Presentation Duration: {duration} minutes (including Q&A {qa_duration if include_qa else 0} minutes)
+Content Duration: {time_plan.content_duration} minutes
 Technical Level: {technical_level} (Complexity: {technical_depth}/5)
 Target Audience: {audience}
 Presentation Type: {presentation_type}
@@ -317,13 +433,15 @@ Script Style: {script_style}
 Key Themes: {', '.join(key_themes[:5]) if key_themes else 'General content'}
 AWS Services: {', '.join(aws_services[:10]) if aws_services else 'Not applicable'}
 
+Timing Strategy: {time_plan.timing_strategy}
+Buffer Time: {time_plan.buffer_time:.1f} minutes
+
 Presenter Settings:
 - Presentation Confidence: {persona_data.get('presentation_confidence', 'Comfortable')}
 - Interaction Style: {persona_data.get('interaction_style', 'Conversational')}
-- Target Time per Slide: {time_per_slide:.1f} minutes
 
 Script Requirements:
-- Timing Guide: {'Included' if include_timing else 'Not included'}
+- Timing Guide: {'Included with dynamic allocation' if include_timing else 'Not included'}
 - Slide Transitions: {'Natural transitions included' if include_transitions else 'Basic transitions only'}
 - Speaker Notes: {'Detailed notes included' if include_speaker_notes else 'Basic notes only'}
 - Q&A Preparation: {'Expected questions included' if include_qa_prep else 'Not included'}
@@ -336,29 +454,55 @@ Script Requirements:
                 language=language
             )
             
-            # Generate script header
-            script_header = self._generate_script_header(
+            # Safety check for None values
+            if static_content is None:
+                static_content = "You are a professional presentation script generator."
+                logger.warning("Static content was None, using fallback")
+            
+            # Generate script header with timing strategy
+            script_header = self._generate_script_header_with_timing(
                 persona_data=persona_data,
                 presentation_params=presentation_params,
+                time_plan=time_plan,
                 main_topic=main_topic,
-                content_duration=content_duration,
-                qa_duration=qa_duration,
-                include_qa=include_qa,
-                include_timing=include_timing,
-                time_per_slide=time_per_slide,
                 language=language
             )
             
-            # Generate script for each slide with caching
+            # Generate script for each slide with dynamic timing
             slide_scripts = []
             for i, slide_analysis in enumerate(presentation_analysis.slide_analyses):
-                # Prepare dynamic content for this slide
-                timing_text = f'**⏰ Timing:** {time_per_slide:.1f} minutes' if include_timing else ''
-                speaker_notes_text = f'**📝 Speaker Notes:** [Additional tips and notes]' if include_speaker_notes else ''
+                # Find corresponding time allocation
+                slide_allocation = None
+                for allocation in time_plan.slide_allocations:
+                    if allocation.slide_number == slide_analysis.slide_number:
+                        slide_allocation = allocation
+                        break
+                
+                # Use fallback if allocation not found
+                if not slide_allocation:
+                    avg_time = time_plan.content_duration / len(presentation_analysis.slide_analyses)
+                    slide_time = avg_time
+                    slide_type = "content"
+                    rationale = "Average allocation (fallback)"
+                else:
+                    slide_time = slide_allocation.allocated_minutes
+                    slide_type = slide_allocation.slide_type
+                    rationale = slide_allocation.rationale
                 
                 # Determine if this is the first slide (opening) or continuation
                 is_first_slide = (i == 0)
                 slide_context = "opening slide with greeting" if is_first_slide else "continuation slide without greeting"
+                
+                # Prepare dynamic content for this slide with intelligent timing
+                timing_text = f'**⏰ Timing:** {slide_time:.1f} minutes ({rationale})' if include_timing else ''
+                speaker_notes_text = f'**📝 Speaker Notes:** [Additional tips and notes for {slide_type} slide]' if include_speaker_notes else ''
+                
+                # Add language-specific instructions
+                language_reminder = ""
+                if language == 'Korean':
+                    language_reminder = """
+CRITICAL: This script must be written ENTIRELY in Korean. Do not use any English words or phrases except for technical terms that require clarification (use format: 한국어 용어 (English term)). All instructions, timing notes, and speaker notes must also be in Korean.
+"""
                 
                 dynamic_content = f"""
 Current Slide Information:
@@ -368,31 +512,49 @@ Current Slide Information:
 - Key Points: {', '.join(slide_analysis.key_concepts[:5])}
 - AWS Services: {', '.join(slide_analysis.aws_services)}
 - Slide Context: {slide_context}
+- Slide Type: {slide_type}
+- Allocated Time: {slide_time:.1f} minutes
+- Time Rationale: {rationale}
+- Target Language: {language}
+
+{language_reminder}
 
 Generate a natural presentation script for this slide that:
 1. {"Includes a professional greeting and introduction" if is_first_slide else "Continues naturally from the previous slide without greeting"}
 2. Matches the presenter's style and confidence level
-3. Includes timing guidance if requested ({include_timing})
-4. Uses appropriate transitions ({include_transitions})
-5. Adds speaker notes if requested ({include_speaker_notes})
-6. Maintains consistent technical depth ({technical_depth}/5)
-7. Allocates approximately {time_per_slide:.1f} minutes for this slide
+3. Fits the allocated time of {slide_time:.1f} minutes (adjust content depth accordingly)
+4. Reflects the slide type ({slide_type}) in pacing and detail level
+5. Includes timing guidance if requested ({include_timing})
+6. Uses appropriate transitions ({include_transitions})
+7. Adds speaker notes if requested ({include_speaker_notes})
+8. Maintains consistent technical depth ({technical_depth}/5)
+9. {"MUST be written entirely in Korean language" if language == 'Korean' else "Must be written in English language"}
 
 {"IMPORTANT: This is the first slide, so include a proper greeting and introduction." if is_first_slide else "IMPORTANT: This is a continuation slide, so do NOT include greetings like '안녕하세요' or introductions. Start directly with the content transition."}
 
+Time Allocation Guidance:
+- {slide_time:.1f} minutes means {"brief, focused content" if slide_time < 1.5 else "moderate detail" if slide_time < 3.0 else "comprehensive explanation with examples"}
+- Adjust script length and detail level to match the allocated time
+- For {slide_type} slides, {"keep it concise and transitional" if slide_type in ["title", "agenda", "transition"] else "provide detailed technical explanation" if slide_type == "technical" else "balance overview with key details"}
+
 Please provide the script in the following format:
 ### Slide {slide_analysis.slide_number}: [Title]
-[Main presentation script]
+[Main presentation script - length appropriate for {slide_time:.1f} minutes]
 {timing_text}
 {speaker_notes_text}
 """
                 
                 # Generate script for this slide using cached prompt with slide number
-                response = self._invoke_claude_with_cache(
-                    static_content=static_content,
-                    dynamic_content=dynamic_content,
-                    slide_number=slide_analysis.slide_number
-                )
+                if self.enable_caching:
+                    response = self._invoke_claude_with_cache(
+                        static_content=static_content,
+                        dynamic_content=dynamic_content,
+                        slide_number=slide_analysis.slide_number
+                    )
+                else:
+                    # Use direct invocation without caching for better stability
+                    full_prompt = (static_content or "") + "\n\n" + (dynamic_content or "")
+                    response = self._invoke_claude_direct(full_prompt)
                 
                 # Extract content from response
                 slide_script = response.get('content', response.get('completion', ''))
@@ -403,7 +565,24 @@ Please provide the script in the following format:
             
             # Add Q&A section if requested
             if include_qa_prep:
-                qa_prompt = f"""
+                if language == 'Korean':
+                    qa_prompt = f"""
+{main_topic}에 대한 발표 내용을 바탕으로 청중이 물어볼 가능성이 높은 질문 5개와 제안 답변을 생성해주세요.
+기술 수준 ({technical_level})과 청중 유형 ({audience})을 고려해주세요.
+기술적 질문과 비즈니스 중심 질문을 적절히 포함해주세요.
+
+다음 형식으로 출력해주세요:
+## 💡 예상 질문 및 답변
+
+**질문 1:** [질문]
+**답변 1:** [답변]
+
+[5개 질문까지 계속]
+
+모든 내용을 한국어로 작성해주세요.
+"""
+                else:
+                    qa_prompt = f"""
 Based on the presentation content about {main_topic}, generate 5 likely audience questions and suggested answers.
 Consider the technical level ({technical_level}) and audience type ({audience}).
 Include both technical and business-focused questions as appropriate.
@@ -416,22 +595,69 @@ Format the output as:
 
 [Continue for 5 questions]
 """
-                qa_response = self._invoke_claude_with_cache(
-                    static_content=static_content,
-                    dynamic_content=qa_prompt
-                )
+                
+                if self.enable_caching:
+                    qa_response = self._invoke_claude_with_cache(
+                        static_content=static_content,
+                        dynamic_content=qa_prompt
+                    )
+                else:
+                    # Use direct invocation for Q&A
+                    full_qa_prompt = (static_content or "") + "\n\n" + (qa_prompt or "")
+                    qa_response = self._invoke_claude_direct(full_qa_prompt)
                 complete_script += "\n\n---\n\n" + qa_response.get('content', qa_response.get('completion', ''))
             
             # Log cache performance
             if self.enable_caching and self.cache_manager:
                 cache_stats = self.cache_manager.get_cache_stats()
                 logger.info(f"Script generation completed with cache stats: {cache_stats}")
+            else:
+                logger.info("Script generation completed without caching")
             
             return complete_script
             
         except Exception as e:
             logger.error(f"Script generation failed: {str(e)}")
             raise
+    
+    def _invoke_claude_direct(self, prompt: str, max_tokens: int = 4000) -> Dict[str, Any]:
+        """Invoke Claude directly without caching for better stability.
+        
+        Args:
+            prompt: Complete prompt text
+            max_tokens: Maximum tokens to generate
+            
+        Returns:
+            Response dictionary with content
+        """
+        try:
+            messages = [
+                {
+                    "role": "user",
+                    "content": [{"text": prompt}]
+                }
+            ]
+            
+            # Use Converse API directly
+            response = bedrock_client.client.converse(
+                modelId=self.model_id,
+                messages=messages,
+                inferenceConfig={
+                    "maxTokens": max_tokens,
+                    "temperature": 0.7,
+                    "topP": 0.9
+                }
+            )
+            
+            if response and "output" in response:
+                content = response["output"]["message"]["content"][0]["text"]
+                return {"content": content}
+            
+            return {"content": ""}
+            
+        except Exception as e:
+            logger.error(f"Direct Claude invocation failed: {str(e)}")
+            return {"content": ""}
     
     def _generate_script_header(self, **kwargs) -> str:
         """Generate script header with presentation overview."""

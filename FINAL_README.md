@@ -61,7 +61,7 @@ This application transforms PowerPoint presentations into comprehensive, ready-t
 
 ### Prerequisites
 
-- Python 3.10 or higher
+- Python 3.10 or higher (required for AWS Documentation MCP server compatibility)
 - AWS CLI configured with appropriate permissions
 - UV package manager (recommended) or pip
 
@@ -88,6 +88,9 @@ This application transforms PowerPoint presentations into comprehensive, ready-t
 
 3. **Install AWS Documentation MCP Server**
    ```bash
+   # Verify Python version (3.10+ required for MCP server)
+   python --version
+   
    # Install the MCP server globally
    uvx install awslabs.aws-documentation-mcp-server@latest
    
@@ -350,4 +353,4 @@ For issues and questions:
 
 **Version**: 2.0.0  
 **Last Updated**: December 2024  
-**Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet
+**Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet, AWS Documentation MCP Server
