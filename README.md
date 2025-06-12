@@ -1,7 +1,5 @@
 # AWS PowerPoint Script Generator
 
-**🦆 2025 Quack the Code Challenge Submission**
-
 An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and MCP integration.
 
 
