@@ -188,7 +188,7 @@ def generate_content_aware_script(analysis_result, persona_data, presentation_pa
         from src.script_generation.claude_script_generator_cached import ClaudeScriptGeneratorCached
         
         # Initialize Claude script generator with caching
-        claude_generator = ClaudeScriptGeneratorCached(enable_caching=False)
+        claude_generator = ClaudeScriptGeneratorCached(enable_caching=True)
         
         # Create mock presentation analysis object for compatibility
         class MockPresentationAnalysis:
@@ -254,7 +254,7 @@ def generate_content_aware_script_optimized(analysis_result, persona_data, prese
         from src.agent.optimized_script_agent import OptimizedScriptAgent, OptimizedPersonaProfile
         
         # Initialize optimized script agent with caching
-        script_agent = OptimizedScriptAgent(enable_caching=False, max_workers=4)
+        script_agent = OptimizedScriptAgent(enable_caching=True, max_workers=4)
         
         # Create mock presentation analysis object for compatibility
         class MockPresentationAnalysis:
@@ -361,7 +361,7 @@ def generate_content_aware_script_optimized(analysis_result, persona_data, prese
         from src.script_generation.claude_script_generator_cached import ClaudeScriptGeneratorCached
         
         # Initialize Claude script generator with caching
-        claude_generator = ClaudeScriptGeneratorCached(enable_caching=False)
+        claude_generator = ClaudeScriptGeneratorCached(enable_caching=True)
         
         # Create mock presentation analysis object for compatibility
         class MockPresentationAnalysis:

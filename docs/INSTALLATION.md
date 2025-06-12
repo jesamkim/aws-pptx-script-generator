@@ -94,7 +94,7 @@ aws configure
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/jesamkim/aws-pptx-script-generator.git
 cd aws-pptx-script-generator
 ```
 
@@ -394,7 +394,7 @@ If you encounter issues during installation:
 1. **Check the [Troubleshooting](#troubleshooting) section**
 2. **Review log files in `logs/` directory**
 3. **Run diagnostic tests in `tests/` directory**
-4. **Create an issue in the GitHub repository**
+4. **Create an issue in the GitLab repository**
 
 ---
 

@@ -1,7 +1,7 @@
-"""Claude-based Natural Script Generator with Prompt Caching.
+"""Claude-based Natural Script Generator.
 
 This module uses Claude 3.7 Sonnet to generate natural, contextual presentation scripts
-based on actual slide content with optimized prompt caching for performance.
+based on actual slide content rather than templates.
 """
 
 import json
@@ -11,7 +11,6 @@ from loguru import logger
 
 from config.aws_config import bedrock_client
 from src.utils.logger import log_execution_time
-from .prompt_cache_manager import PromptCacheManager, CacheConfig
 
 
 @dataclass
@@ -45,151 +44,15 @@ class SlideScriptRequest:
 
 
 class ClaudeScriptGenerator:
-    """Natural script generator using Claude 3.7 Sonnet with prompt caching."""
+    """Natural script generator using Claude 3.7 Sonnet."""
     
-    def __init__(self, enable_caching: bool = True):
-        """Initialize Claude script generator with caching support.
-        
-        Args:
-            enable_caching: Whether to enable prompt caching
-        """
-        self.model_id = bedrock_client.config.bedrock_model_id
+    def __init__(self):
+        """Initialize Claude script generator."""
+        self.model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
         self.max_retries = 3
-        self.enable_caching = enable_caching
-        
-        # Initialize cache manager if caching is enabled
-        if self.enable_caching:
-            cache_config = CacheConfig(
-                type="ephemeral",
-                namespace="aws-pptx-script-generator",
-                version="1.0.0",
-                ttl=300  # 5 minutes
-            )
-            self.cache_manager = PromptCacheManager(cache_config)
-        else:
-            self.cache_manager = None
-            
-        logger.info(f"Initialized Claude script generator with caching: {enable_caching}")
+        logger.info("Initialized Claude script generator")
     
-    def _get_static_prompt_content(self, 
-                                 presentation_context: str,
-                                 presenter_info: Dict[str, str],
-                                 language: str) -> str:
-        """Get static content that can be cached.
-        
-        Args:
-            presentation_context: Overall presentation context
-            presenter_info: Presenter information
-            language: Target language
-            
-        Returns:
-            Static prompt content for caching
-        """
-        # Determine language instruction
-        language_instruction = ""
-        if language == 'Korean':
-            language_instruction = """IMPORTANT: Generate all content in Korean language. Use natural, professional Korean suitable for business presentations.
-
-**Korean Style Guidelines:**
-- Use varied transition expressions instead of repeating "이제" (now)
-- Alternative transitions: "다음으로", "계속해서", "여기서", "한편", "또한", "그리고", "더불어"
-- Avoid starting each slide with greetings - the presentation has already begun
-- Use natural Korean business presentation flow
-- Vary sentence structures to avoid monotony
-- Use appropriate honorifics and professional language"""
-        else:
-            language_instruction = "Generate all content in English language. Use natural, professional English suitable for business presentations."
-        
-        static_content = f"""
-You are a professional AWS Solutions Architect and expert at creating natural presentation scripts for actual delivery.
-
-{language_instruction}
-
-**Presenter Information:**
-- Name: {presenter_info.get('full_name', 'Presenter')}
-- Title: {presenter_info.get('job_title', 'Solutions Architect')}
-- Experience: {presenter_info.get('experience_level', 'Senior')}
-- Confidence: {presenter_info.get('presentation_confidence', 'Comfortable')}
-- Style: {presenter_info.get('interaction_style', 'Conversational')}
-
-**Presentation Context:**
-{presentation_context}
-
-**Script Generation Guidelines:**
-1. Create natural, conversational scripts that sound authentic when spoken
-2. Include appropriate timing cues and transitions
-3. Adapt technical depth to the specified audience level
-4. Incorporate presenter's personal style and confidence level
-5. Ensure smooth flow between slides with natural transitions
-6. Add speaker notes and tips when requested
-7. Include Q&A preparation if specified
-
-**Output Format:**
-- Provide complete, ready-to-deliver scripts
-- Include timing guidance and speaker notes
-- Use natural language that flows well when spoken
-- Maintain consistency with presenter's style and experience level
-"""
-        return static_content
-    
-    def _invoke_claude_with_cache(self,
-                                static_content: str,
-                                dynamic_content: str,
-                                max_tokens: int = 4000) -> Dict[str, Any]:
-        """Invoke Claude with prompt caching support.
-        
-        Args:
-            static_content: Static content to cache
-            dynamic_content: Dynamic content for this request
-            max_tokens: Maximum tokens to generate
-            
-        Returns:
-            Claude response
-        """
-        try:
-            if self.enable_caching and self.cache_manager:
-                # Prepare cached prompt
-                prompt_config = self.cache_manager.prepare_cached_prompt(
-                    static_content=static_content,
-                    dynamic_content=dynamic_content,
-                    breakpoints=[1024, 2048]  # Cache breakpoints at 1K and 2K tokens
-                )
-                
-                # Prepare request body with cache control
-                body = {
-                    "prompt": prompt_config["prompt"],
-                    "max_tokens": max_tokens,
-                    "temperature": 0.7,
-                    "top_p": 0.9,
-                    "cache_control": prompt_config["cache_control"]
-                }
-            else:
-                # Standard request without caching
-                body = {
-                    "prompt": f"{static_content}\n\n{dynamic_content}",
-                    "max_tokens": max_tokens,
-                    "temperature": 0.7,
-                    "top_p": 0.9
-                }
-            
-            # Invoke Claude
-            response = bedrock_client.invoke_model(
-                modelId=self.model_id,
-                body=json.dumps(body)
-            )
-            
-            # Parse response
-            response_body = json.loads(response['body'].read())
-            
-            # Update cache statistics if caching is enabled
-            if self.enable_caching and self.cache_manager:
-                self.cache_manager.update_cache_stats(response_body)
-            
-            return response_body
-            
-        except Exception as e:
-            logger.error(f"Claude invocation failed: {str(e)}")
-            raise
+    def _create_script_generation_prompt(self, request: SlideScriptRequest) -> str:
         """Create unified English prompt for natural script generation.
         
         Args:
@@ -443,32 +306,11 @@ Generate a meaningful and natural presentation script based on the actual slide 
         key_themes = presentation_params.get('key_themes', [])
         aws_services = presentation_params.get('aws_services_mentioned', [])
         
-        # Extract new presentation settings
-        time_per_slide = presentation_params.get('time_per_slide', 2.0)
-        include_qa = presentation_params.get('include_qa', True)
-        qa_duration = presentation_params.get('qa_duration', 10)
-        technical_depth = presentation_params.get('technical_depth', 3)
-        include_timing = presentation_params.get('include_timing', True)
-        include_transitions = presentation_params.get('include_transitions', True)
-        include_speaker_notes = presentation_params.get('include_speaker_notes', True)
-        include_qa_prep = presentation_params.get('include_qa_prep', True)
-        
-        # Extract presenter preferences
-        presentation_confidence = persona_data.get('presentation_confidence', 'Comfortable')
-        interaction_style = persona_data.get('interaction_style', 'Conversational')
-        
-        # Calculate effective content duration
-        content_duration = duration - (qa_duration if include_qa else 0)
-        
         # Calculate time per slide with content-aware distribution
         slide_count = len(presentation_analysis.slide_analyses)
         
-        # Use user-specified time per slide or calculate based on content duration
-        if time_per_slide * slide_count <= content_duration:
-            base_time_per_slide = time_per_slide
-        else:
-            base_time_per_slide = content_duration / max(slide_count, 1)
-            logger.warning(f"Adjusted time per slide from {time_per_slide} to {base_time_per_slide:.1f} minutes to fit duration")
+        # Calculate base time per slide
+        base_time_per_slide = duration / max(slide_count, 1)
         
         # Adjust time allocation based on slide complexity and importance
         slide_time_allocations = []
@@ -512,24 +354,13 @@ Generate a meaningful and natural presentation script based on the actual slide 
         presentation_context = f"""
 주제: {main_topic}
 전체 슬라이드 수: {slide_count}개
-발표 시간: {duration}분 (Q&A {qa_duration if include_qa else 0}분 포함)
-기술 수준: {technical_level} (복잡도: {technical_depth}/5)
+발표 시간: {duration}분
+기술 수준: {technical_level} (복잡도: {presentation_analysis.technical_complexity:.1f}/5)
 대상 청중: {audience}
 발표 유형: {presentation_type}
 스크립트 스타일: {script_style}
 핵심 주제: {', '.join(key_themes[:5]) if key_themes else '일반적인 내용'}
 AWS 서비스: {', '.join(aws_services[:10]) if aws_services else '해당 없음'}
-
-발표자 설정:
-- 발표 자신감: {presentation_confidence}
-- 상호작용 스타일: {interaction_style}
-- 슬라이드당 목표 시간: {time_per_slide:.1f}분
-
-스크립트 요구사항:
-- 타이밍 가이드: {'포함' if include_timing else '미포함'}
-- 슬라이드 전환: {'자연스러운 전환 포함' if include_transitions else '기본 전환만'}
-- 발표자 노트: {'상세 노트 포함' if include_speaker_notes else '기본 노트만'}
-- Q&A 준비: {'예상 질문 포함' if include_qa_prep else '미포함'}
 """
         
         # Generate script header with language-specific content
@@ -537,22 +368,12 @@ AWS 서비스: {', '.join(aws_services[:10]) if aws_services else '해당 없음
             script = f"""# {persona_data.get('full_name', '발표자')}님의 {main_topic} 프레젠테이션 스크립트
 
 ## 📋 프레젠테이션 개요
-- **발표 시간**: {duration}분 ({content_duration}분 발표 + {qa_duration if include_qa else 0}분 Q&A)
+- **발표 시간**: {duration}분
 - **대상 청중**: {audience}
 - **언어**: 한국어
 - **주제**: {main_topic}
 - **슬라이드 수**: {slide_count}개
-- **기술 수준**: {technical_depth}/5 ({technical_level})
-- **발표 스타일**: {script_style}
 - **스크립트 생성**: Claude 3.7 Sonnet 자연어 생성
-
-## 🎯 발표자 가이드
-- **발표 자신감 수준**: {presentation_confidence}
-- **상호작용 스타일**: {interaction_style}
-- **슬라이드당 목표 시간**: {time_per_slide:.1f}분
-{'- **타이밍 가이드**: 각 섹션별 시간 안내 포함' if include_timing else ''}
-{'- **전환 가이드**: 자연스러운 슬라이드 전환 문구 포함' if include_transitions else ''}
-{'- **발표자 노트**: 상세한 발표 팁과 주의사항 포함' if include_speaker_notes else ''}
 
 ---
 
@@ -564,16 +385,10 @@ AWS 서비스: {', '.join(aws_services[:10]) if aws_services else '해당 없음
 저는 {persona_data.get('job_title', 'Solutions Architect')} {persona_data.get('full_name', '발표자')}입니다.
 
 오늘은 {main_topic}에 대해 함께 알아보는 시간을 갖겠습니다.
-{content_duration}분 동안 실무에 바로 적용할 수 있는 내용들을 중심으로 말씀드리겠습니다.
-{'마지막에는 질의응답 시간도 준비되어 있으니 궁금한 점이 있으시면 언제든 말씀해 주세요.' if include_qa else ''}
+{duration}분 동안 실무에 바로 적용할 수 있는 내용들을 중심으로 말씀드리겠습니다.
 
 시작하겠습니다.
 ```
-
-{'## ⏰ 타이밍 가이드' if include_timing else ''}
-{'- 전체 발표: ' + str(content_duration) + '분' if include_timing else ''}
-{'- 슬라이드당 평균: ' + f'{time_per_slide:.1f}분' if include_timing else ''}
-{'- Q&A 시간: ' + str(qa_duration) + '분' if include_timing and include_qa else ''}
 
 ---
 
@@ -582,51 +397,6 @@ AWS 서비스: {', '.join(aws_services[:10]) if aws_services else '해당 없음
 """
         else:
             script = f"""# {persona_data.get('full_name', 'Presenter')}'s {main_topic} Presentation Script
-
-## 📋 Presentation Overview
-- **Duration**: {duration} minutes ({content_duration} min presentation + {qa_duration if include_qa else 0} min Q&A)
-- **Target Audience**: {audience}
-- **Language**: English
-- **Topic**: {main_topic}
-- **Slide Count**: {slide_count}
-- **Technical Level**: {technical_depth}/5 ({technical_level})
-- **Presentation Style**: {script_style}
-- **Script Generation**: Claude 3.7 Sonnet Natural Language Generation
-
-## 🎯 Presenter Guide
-- **Presentation Confidence**: {presentation_confidence}
-- **Interaction Style**: {interaction_style}
-- **Target Time per Slide**: {time_per_slide:.1f} minutes
-{'- **Timing Cues**: Section timing guidance included' if include_timing else ''}
-{'- **Transition Guide**: Natural slide transition phrases included' if include_transitions else ''}
-{'- **Speaker Notes**: Detailed presentation tips and notes included' if include_speaker_notes else ''}
-
----
-
-## 🎤 Opening Remarks
-
-📢 **Presentation Script**
-```
-Hello everyone.
-I'm {persona_data.get('full_name', 'Presenter')}, {persona_data.get('job_title', 'Solutions Architect')}.
-
-Today we'll explore {main_topic} together.
-I'll focus on practical content you can apply immediately over the next {content_duration} minutes.
-{'We'll also have time for Q&A at the end, so please feel free to ask questions.' if include_qa else ''}
-
-Let's get started.
-```
-
-{'## ⏰ Timing Guide' if include_timing else ''}
-{'- Total Presentation: ' + str(content_duration) + ' minutes' if include_timing else ''}
-{'- Average per Slide: ' + f'{time_per_slide:.1f} minutes' if include_timing else ''}
-{'- Q&A Time: ' + str(qa_duration) + ' minutes' if include_timing and include_qa else ''}
-
----
-
-## 📝 Slide-by-Slide Script
-
-"""
 
 ## 📋 Presentation Overview
 - **Duration**: {duration} minutes

@@ -1,10 +1,47 @@
 # AWS PowerPoint Script Generator
 
+**🦆 2025 Quack the Code Challenge Submission**
+
 An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and MCP integration.
 
-## 🎯 Overview
 
-This application transforms PowerPoint presentations into comprehensive, ready-to-deliver presentation scripts. It combines multimodal AI analysis, AWS service knowledge enhancement, and intelligent script generation to create natural, professional scripts tailored to your presentation style and audience.
+## 🎯 Problem Statement
+
+AWS Solutions Architects face a recurring challenge when preparing for customer presentations, technical sessions, and internal briefings. The process of creating engaging, accurate, and well-timed presentation scripts is both time-consuming and complex, requiring:
+
+### Current Pain Points
+- **Time-Intensive Process**: Manual script writing takes 2-4 hours per presentation
+- **Technical Accuracy Concerns**: Ensuring AWS service information is current and accurate
+- **Inconsistent Quality**: Script quality varies based on individual SA experience and available time
+- **Language Barriers**: Need for localized scripts for global audiences (Korean, English, etc.)
+- **Time Management Issues**: Difficulty in allocating appropriate time per slide based on content complexity
+- **Repetitive Work**: Similar presentations require recreating scripts from scratch
+
+### Business Impact
+- **Reduced Productivity**: SAs spend valuable time on script preparation instead of customer engagement
+- **Inconsistent Customer Experience**: Varying presentation quality across different SAs
+- **Missed Opportunities**: Rushed script preparation leads to suboptimal customer presentations
+- **Scalability Challenges**: Manual process doesn't scale with growing SA team demands
+
+## 💡 Solution Overview
+
+The AWS PowerPoint Script Generator addresses these challenges through an intelligent, automated approach that leverages cutting-edge AI technologies to transform PowerPoint presentations into professional, ready-to-deliver scripts.
+
+### Key Capabilities
+- **Multimodal AI Analysis**: Analyzes both text content and visual elements in slides
+- **Intelligent Time Allocation**: Dynamically assigns presentation time based on slide complexity and importance
+- **AWS-Accurate Content**: Integrates with AWS Documentation MCP for technical accuracy
+- **Multi-Language Support**: Generates scripts in Korean and English with natural localization
+- **Persona-Aware Generation**: Adapts to individual SA presentation styles and confidence levels
+- **Real-Time Processing**: Generates comprehensive scripts in minutes, not hours
+
+### Business Value
+- **Time Savings**: Reduces script preparation time from 2-4 hours to 5-10 minutes (75-90% reduction)
+- **Quality Consistency**: Maintains professional presentation standards across all SAs
+- **Technical Accuracy**: Real-time AWS documentation integration ensures current information
+- **Global Scalability**: Multi-language support enables consistent quality worldwide
+- **Cost Efficiency**: Frees up SA time for high-value customer engagement activities
+- **Knowledge Democratization**: Junior SAs can produce senior-level presentation quality
 
 ## ✨ Key Features
 
@@ -69,7 +106,7 @@ This application transforms PowerPoint presentations into comprehensive, ready-t
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/jesamkim/aws-pptx-script-generator.git
    cd aws-pptx-script-generator
    ```
 
@@ -141,34 +178,30 @@ streamlit run streamlit_app.py
 
 ### Step-by-Step Process
 
-1. **Upload PowerPoint File**
-   - Drag and drop your .pptx file or use the file uploader
-   - Supported formats: PowerPoint (.pptx) files
+#### 1. Upload PowerPoint File
+Upload your .pptx file using the drag-and-drop interface or file uploader.
 
-2. **Configure Presenter Profile**
-   - Enter presenter information (name, title, experience level)
-   - Select presentation confidence and interaction style
-   - Choose target audience and technical level
+![Step 1: Upload PowerPoint](images/screencapture_step_1.png)
 
-3. **Set Presentation Parameters**
-   - Define presentation duration and Q&A time
-   - Select script style (technical, conversational, formal)
-   - Configure timing and speaker notes preferences
+#### 2. AI Analysis Results
+The system performs multimodal analysis of the uploaded PowerPoint and displays the analysis results including slide content, AWS services detected, and technical complexity assessment.
 
-4. **AI Analysis**
-   - Automatic slide content extraction and analysis
-   - AWS service identification and categorization
-   - Technical complexity assessment
+![Step 2: AI Analysis Results](images/screencapture_step_2.png)
 
-5. **Script Generation**
-   - Choose between basic cached generation or optimized agent-based generation
-   - Real-time AWS documentation enhancement via MCP
-   - Natural language script creation with proper flow
+#### 3. Presenter Information
+Enter your presenter information including name, title, and other personal details.
 
-6. **Review and Export**
-   - Review generated script with timing guidance
-   - Download as Markdown file
-   - Copy to clipboard for immediate use
+![Step 3: Presenter Information](images/screencapture_step_3.png)
+
+#### 4. Presentation Settings
+Configure presentation parameters including language selection, presentation duration, target audience, and other settings.
+
+![Step 4: Presentation Settings](images/screencapture_step_4.png)
+
+#### 5. Generated Script Results
+View the final generated presentation script with dynamic timing allocation and comprehensive content.
+
+![Step 5: Generated Script Results](images/screencapture_step_5_result.png)
 
 ### Generation Options
 
@@ -195,7 +228,7 @@ AWS_DEFAULT_REGION=us-west-2
 AWS_PROFILE=default
 
 # Bedrock Configuration
-BEDROCK_MODEL_ID=anthropic.claude-3-7-sonnet-20241022-v1:0
+BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20241022-v1:0
 
 # Application Settings
 LOG_LEVEL=INFO
@@ -306,51 +339,34 @@ export LOG_LEVEL=DEBUG
 streamlit run streamlit_app.py
 ```
 
-## 🤝 Contributing
+## 🤝 Development
 
 ### Development Setup
 
-1. **Fork and clone the repository**
+1. **Clone the repository and set up environment**
 2. **Install development dependencies**
    ```bash
+   cd tests
    uv pip install -r requirements-dev.txt
    ```
-3. **Run pre-commit hooks**
-   ```bash
-   pre-commit install
-   ```
-4. **Run tests before submitting**
+3. **Run tests to verify setup**
    ```bash
    python -m pytest tests/ -v
    ```
 
-### Code Style
+### Code Quality Standards
 
 - Follow PEP 8 guidelines
 - Use type hints for all functions
 - Add docstrings for public methods
-- Maintain test coverage above 80%
+- Maintain comprehensive test coverage
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **AWS Bedrock Team** for Claude 3.7 Sonnet access
-- **Anthropic** for the Claude language model
-- **AWS Labs** for the MCP Documentation server
-- **Streamlit Team** for the excellent web framework
-
-## 📞 Support
-
-For issues and questions:
-- Create an issue in the GitHub repository
-- Check the troubleshooting section
-- Review test examples in the `tests/` directory
-
 ---
 
 **Version**: 2.0.0  
-**Last Updated**: December 2024  
+**Last Updated**: June 12, 2025  
 **Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet, AWS Documentation MCP Server

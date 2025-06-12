@@ -231,7 +231,7 @@ A: Slide count, technical depth, cache status, and system resources.
 ## Support
 
 For additional support:
-- Check the [GitHub Issues](https://github.com/yourusername/aws-pptx-script-generator/issues)
+- Check the [GitLab Issues](https://gitlab.aws.dev/jesamkim/aws-pptx-script-generator/-/issues)
 - Review the [API Documentation](API.md)
 - Contact AWS Support for Bedrock-related issues
 

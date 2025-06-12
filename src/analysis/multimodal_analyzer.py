@@ -85,7 +85,7 @@ class MultimodalAnalyzer:
     
     def __init__(self):
         """Initialize multimodal analyzer."""
-        self.model_id = bedrock_client.config.bedrock_model_id
+        self.model_id = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
         self.max_retries = 3
         self.retry_delay = 1.0
         

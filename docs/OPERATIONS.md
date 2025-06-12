@@ -9,7 +9,7 @@ This manual provides operational guidance for deploying, monitoring, and maintai
 ### Prerequisites
 
 - AWS Account with Bedrock access
-- Python 3.9+ environment
+- Python 3.10+ environment
 - Streamlit deployment platform
 - Monitoring tools (CloudWatch, etc.)
 
