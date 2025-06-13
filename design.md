@@ -262,7 +262,7 @@ The system processes data through a structured 8-step workflow:
 ```
 User Interface Layer
     ↓ (User Input)
-Orchestration Layer (AWS Strands Agent)
+Orchestration Layer (Custom Workflow Orchestrator)
     ↓ (Workflow Commands)
 Processing Layer (Parallel Execution)
     ├── PowerPoint Engine
@@ -321,7 +321,7 @@ Export Layer
   - Caching and optimization
 
 ### Agent and Workflow
-- **AWS Strands Agent SDK**: Intelligent orchestration
+- **Custom Workflow Orchestrator**: Intelligent task coordination
   - Multi-step workflow management
   - Decision-making logic
   - Tool integration
@@ -493,7 +493,7 @@ class AWSDocsClient:
 ### Agent Workflow Orchestration
 
 #### `src/agent/workflow_orchestrator.py`
-**Purpose**: AWS Strands Agent workflow management
+**Purpose**: Custom workflow orchestration and task management
 **Responsibilities**:
 - Multi-step workflow coordination
 - Parallel processing management
@@ -655,9 +655,9 @@ class MarkdownGenerator:
 - Memory usage optimization
 - Performance monitoring
 
-### AWS Strands Agent SDK Integration
+### Custom Workflow Orchestration Integration
 
-**Agent Configuration**:
+**Orchestrator Configuration**:
 - Custom tool registration
 - Workflow definition and management
 - State persistence and recovery
