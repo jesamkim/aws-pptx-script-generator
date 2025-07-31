@@ -15,6 +15,7 @@ from loguru import logger
 
 from config.mcp_config import mcp_client
 from src.utils.logger import log_execution_time, performance_monitor
+from .real_mcp_client import SyncMCPClient
 
 
 @dataclass
@@ -74,7 +75,16 @@ class AWSDocsClient:
         self.cache = {}
         self.cache_ttl = 3600  # 1 hour cache
         self._setup_session()
-        logger.info("Initialized AWS Documentation MCP client")
+        
+        # Initialize real MCP client
+        self.real_mcp_client = SyncMCPClient()
+        self.use_real_mcp = self.real_mcp_client.is_available()
+        
+        if self.use_real_mcp:
+            logger.info("Initialized AWS Documentation MCP client with real MCP server")
+        else:
+            logger.warning("Real MCP server not available, using mock data fallback")
+            logger.info("Initialized AWS Documentation MCP client")
     
     def _setup_session(self):
         """Set up HTTP session with retry strategy."""
@@ -163,8 +173,24 @@ class AWSDocsClient:
         performance_monitor.start_operation(f"get_service_docs_{service_name}")
         
         try:
-            # For demo purposes, we'll simulate MCP server responses
-            # In production, this would make actual MCP server calls
+            # Try real MCP client first if available
+            if self.use_real_mcp:
+                try:
+                    real_docs = self.real_mcp_client.get_service_documentation(service_name)
+                    if real_docs:
+                        # Convert real MCP response to ServiceDocumentation format
+                        service_doc = self._convert_real_mcp_to_service_doc(real_docs, service_name)
+                        if service_doc:
+                            self._set_cache(cache_key, service_doc)
+                            performance_monitor.end_operation(f"get_service_docs_{service_name}", True)
+                            logger.info(f"Retrieved documentation for {service_name} from real MCP server")
+                            return service_doc
+                except Exception as e:
+                    logger.warning(f"Real MCP client failed for {service_name}: {str(e)}")
+                    # Continue to fallback
+            
+            # Fallback to mock data
+            logger.info(f"Using mock data fallback for {service_name}")
             mock_documentation = self._get_mock_service_documentation(service_name)
             
             if mock_documentation:
@@ -298,7 +324,100 @@ class AWSDocsClient:
         }
         
         service_key = service_name.lower().replace(' ', '').replace('-', '')
-        return mock_services.get(service_key)
+    def _convert_real_mcp_to_service_doc(self, real_docs: Dict[str, Any], service_name: str) -> Optional[ServiceDocumentation]:
+        """Convert real MCP response to ServiceDocumentation format.
+        
+        Args:
+            real_docs: Response from real MCP client
+            service_name: AWS service name
+            
+        Returns:
+            ServiceDocumentation object or None if conversion fails
+        """
+        try:
+            # Extract information from real MCP response
+            service_display_name = real_docs.get('service_name', f"AWS {service_name.upper()}")
+            description = real_docs.get('description', '')
+            detailed_content = real_docs.get('detailed_content', '')
+            documentation_url = real_docs.get('documentation_url', '')
+            
+            # Parse detailed content for additional information
+            use_cases = self._extract_use_cases_from_content(detailed_content)
+            features = self._extract_features_from_content(detailed_content)
+            
+            # Get best practices from real MCP client
+            best_practices = []
+            try:
+                best_practices = self.real_mcp_client.get_best_practices(service_name)
+            except Exception as e:
+                logger.warning(f"Failed to get best practices from real MCP: {str(e)}")
+            
+            # Create ServiceDocumentation object
+            return ServiceDocumentation(
+                service_name=service_display_name,
+                description=description or detailed_content[:200] + "..." if detailed_content else f"AWS {service_name} service",
+                use_cases=use_cases,
+                features=features,
+                pricing_model="Pay-as-you-go pricing model",  # Generic pricing info
+                best_practices=best_practices,
+                code_examples=[],  # Could be enhanced to extract from content
+                related_services=[],  # Could be enhanced to extract from content
+                documentation_url=documentation_url
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to convert real MCP response: {str(e)}")
+            return None
+    
+    def _extract_use_cases_from_content(self, content: str) -> List[str]:
+        """Extract use cases from documentation content.
+        
+        Args:
+            content: Documentation content
+            
+        Returns:
+            List of use cases
+        """
+        use_cases = []
+        if not content:
+            return use_cases
+        
+        # Look for common use case patterns
+        lines = content.split('\n')
+        for line in lines:
+            line = line.strip()
+            if any(keyword in line.lower() for keyword in [
+                'use case', 'used for', 'ideal for', 'perfect for', 'suitable for'
+            ]):
+                if len(line) > 10 and len(line) < 150:
+                    use_cases.append(line)
+        
+        return use_cases[:5]  # Limit to top 5
+    
+    def _extract_features_from_content(self, content: str) -> List[str]:
+        """Extract features from documentation content.
+        
+        Args:
+            content: Documentation content
+            
+        Returns:
+            List of features
+        """
+        features = []
+        if not content:
+            return features
+        
+        # Look for common feature patterns
+        lines = content.split('\n')
+        for line in lines:
+            line = line.strip()
+            if any(keyword in line.lower() for keyword in [
+                'feature', 'capability', 'provides', 'supports', 'includes'
+            ]):
+                if len(line) > 10 and len(line) < 150:
+                    features.append(line)
+        
+        return features[:5]  # Limit to top 5
     
     @log_execution_time
     def get_best_practices(self, service_name: str, use_case: Optional[str] = None) -> List[str]:
@@ -320,7 +439,24 @@ class AWSDocsClient:
             return cached_data
         
         try:
-            # Get service documentation first
+            # Try real MCP client first if available
+            if self.use_real_mcp:
+                try:
+                    real_practices = self.real_mcp_client.get_best_practices(service_name)
+                    if real_practices:
+                        # Add use-case specific practices if available
+                        if use_case:
+                            specific_practices = self._get_use_case_practices(service_name, use_case)
+                            real_practices.extend(specific_practices)
+                        
+                        self._set_cache(cache_key, real_practices)
+                        logger.info(f"Retrieved {len(real_practices)} best practices for {service_name} from real MCP")
+                        return real_practices
+                except Exception as e:
+                    logger.warning(f"Real MCP client failed for best practices {service_name}: {str(e)}")
+                    # Continue to fallback
+            
+            # Fallback to service documentation approach
             service_docs = self.get_service_documentation(service_name)
             
             if service_docs:

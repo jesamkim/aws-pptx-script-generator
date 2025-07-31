@@ -23,6 +23,7 @@ anyio>=4.0.0
 # Type Hints and Validation
 typing-extensions>=4.8.0
 pydantic>=2.0.0
+pydantic-settings>=2.5.2
 
 # Development and Testing
 pytest>=7.4.0
@@ -43,5 +44,9 @@ diskcache>=5.6.0
 # Environment Management
 python-dotenv>=1.0.0
 
-# MCP Integration (installed separately via uvx)
-# awslabs.aws-documentation-mcp-server@latest
+# MCP Integration
+mcp>=1.11.0
+python-mcp-client>=0.1.0
+
+# AWS Documentation MCP Server
+# Note: Install separately with: pip install awslabs-aws-documentation-mcp-server

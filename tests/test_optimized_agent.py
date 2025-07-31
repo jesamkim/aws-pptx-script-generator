@@ -5,7 +5,11 @@ import sys
 import os
 import asyncio
 import time
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.agent.optimized_script_agent import OptimizedScriptAgent, OptimizedPersonaProfile
 

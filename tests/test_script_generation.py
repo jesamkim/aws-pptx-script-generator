@@ -5,7 +5,11 @@ Test script to verify the improved script generation
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.script_generation.claude_script_generator import ClaudeScriptGenerator, SlideScriptRequest
 

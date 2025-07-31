@@ -3,11 +3,15 @@
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import time
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.script_generation.claude_script_generator_cached import ClaudeScriptGeneratorCached
 from src.script_generation.prompt_cache_manager import CacheConfig
-import time
 
 
 def test_prompt_caching():

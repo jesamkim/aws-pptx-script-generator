@@ -1,7 +1,11 @@
 # AWS PowerPoint Script Generator
 
-An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and MCP integration.
+An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and **real-time AWS Documentation MCP integration**.
 
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-orange.svg)](https://aws.amazon.com/bedrock/)
+[![MCP Integration](https://img.shields.io/badge/MCP-Active-green.svg)](https://github.com/modelcontextprotocol)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🎯 Problem Statement
 
@@ -28,7 +32,7 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 ### Key Capabilities
 - **Multimodal AI Analysis**: Analyzes both text content and visual elements in slides
 - **Intelligent Time Allocation**: Dynamically assigns presentation time based on slide complexity and importance
-- **AWS-Accurate Content**: Integrates with AWS Documentation MCP for technical accuracy
+- **Real-time AWS Documentation**: Integrates with AWS Documentation MCP server for technical accuracy
 - **Multi-Language Support**: Generates scripts in Korean and English with natural localization
 - **Persona-Aware Generation**: Adapts to individual SA presentation styles and confidence levels
 - **Real-Time Processing**: Generates comprehensive scripts in minutes, not hours
@@ -55,11 +59,11 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 - **Persona-Aware Generation**: Adapts to presenter's style and confidence level
 - **Slide Flow Continuity**: Ensures smooth transitions between slides
 
-### 📚 AWS Knowledge Enhancement
-- **MCP Integration**: Real-time AWS documentation retrieval
+### 📚 Real-time AWS Knowledge Enhancement
+- **MCP Integration**: Real-time AWS documentation retrieval via Model Context Protocol
 - **Service-Specific Information**: Detailed AWS service descriptions and best practices
-- **Fallback Knowledge Base**: Comprehensive offline AWS service database
-- **Technical Accuracy**: Ensures accurate AWS terminology and concepts
+- **Fallback Knowledge Base**: Comprehensive offline AWS service database for reliability
+- **Technical Accuracy**: Ensures accurate AWS terminology and concepts with live documentation
 
 ### 🎨 Customizable Output
 - **Multiple Script Styles**: Technical, conversational, or formal presentation styles
@@ -79,8 +83,9 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
                                 │                        │
                                 ▼                        ▼
                        ┌──────────────────┐    ┌─────────────────┐
-                       │   MCP Client     │    │   Cache         │
-                       │   (AWS Docs)     │    │   Manager       │
+                       │   Real MCP       │    │   Cache         │
+                       │   Client         │    │   Manager       │
+                       │   (AWS Docs)     │    │   (Multi-layer) │
                        └──────────────────┘    └─────────────────┘
 ```
 
@@ -88,7 +93,7 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 - **Frontend**: Streamlit with responsive UI components
 - **AI Models**: Claude 3.7 Sonnet via AWS Bedrock
 - **Document Processing**: python-pptx, Pillow for image processing
-- **MCP Integration**: Session-based AWS Documentation client
+- **MCP Integration**: Real-time AWS Documentation MCP server client
 - **Caching**: Multi-layer caching with TTL management
 - **Logging**: Structured logging with loguru
 
@@ -96,81 +101,107 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 
 ### Prerequisites
 
-- Python 3.10 or higher (required for AWS Documentation MCP server compatibility)
-- AWS CLI configured with appropriate permissions
-- UV package manager (recommended) or pip
+- **Python 3.10 or higher** (required for AWS Documentation MCP server compatibility)
+- **AWS CLI** configured with appropriate permissions
+- **Internet connection** for AWS Bedrock and MCP services
 
-### Installation
+### ⚡ One-Command Installation (Recommended)
 
-1. **Clone the repository**
+The fastest and most reliable way to get started:
+
+```bash
+# Clone the repository
+git clone https://github.com/jesamkim/aws-pptx-script-generator.git
+cd aws-pptx-script-generator
+
+# Complete automated installation with environment validation
+./manage.sh install
+
+# Start the application
+./manage.sh start
+```
+
+**That's it!** The application will be available at http://localhost:8501
+
+### 🛠️ Management Commands
+
+The `manage.sh` script provides comprehensive project management:
+
+```bash
+# Installation and Setup
+./manage.sh install     # Full installation with advanced environment setup
+./manage.sh validate    # Validate environment configuration
+./manage.sh repair      # Automatically repair environment issues
+
+# Application Management
+./manage.sh start       # Start the Streamlit application
+./manage.sh stop        # Stop the running application
+./manage.sh restart     # Restart the application
+./manage.sh status      # Show application and environment status
+
+# Maintenance and Testing
+./manage.sh test        # Run comprehensive test suite
+./manage.sh update      # Update dependencies
+./manage.sh clean       # Clean temporary files and caches
+./manage.sh logs        # Show application logs
+
+# Backup and Recovery
+./manage.sh backup      # Create backup of configuration
+./manage.sh restore     # Restore configuration from backup
+./manage.sh uninstall   # Remove virtual environment and configs
+
+# Help
+./manage.sh help        # Show all available commands
+```
+
+### 🔧 Advanced Installation Options
+
+#### Platform-Specific Scripts
+```bash
+# Linux/macOS - Basic installation
+./install.sh
+
+# Windows - PowerShell installation
+.\install.ps1
+
+# Advanced environment setup (Linux/macOS)
+./scripts/setup_environment.sh
+```
+
+#### Manual Installation
+<details>
+<summary>Click to expand manual installation steps</summary>
+
+1. **Clone Repository**
    ```bash
    git clone https://github.com/jesamkim/aws-pptx-script-generator.git
    cd aws-pptx-script-generator
    ```
 
-2. **Set up Python environment**
+2. **Set up Python Environment**
    ```bash
-   # Using UV (recommended)
-   uv venv aws-venv
-   source aws-venv/bin/activate  # On Windows: aws-venv\Scripts\activate
-   uv pip install -r requirements.txt
-   
-   # Or using pip
    python -m venv aws-venv
-   source aws-venv/bin/activate
-   pip install -r requirements.txt
+   source aws-venv/bin/activate  # Linux/macOS
+   # aws-venv\Scripts\activate   # Windows
    ```
 
-3. **Install AWS Documentation MCP Server**
+3. **Install Dependencies**
    ```bash
-   # Verify Python version (3.10+ required for MCP server)
-   python --version
-   
-   # Install the MCP server globally
-   uvx install awslabs.aws-documentation-mcp-server@latest
-   
-   # Verify installation
-   uvx awslabs.aws-documentation-mcp-server@latest --help
+   pip install -r requirements.txt
+   pip install awslabs-aws-documentation-mcp-server pydantic-settings
    ```
 
-4. **Configure AWS credentials**
+4. **Configure AWS Credentials**
    ```bash
    aws configure
-   # Enter your AWS Access Key ID, Secret Access Key, and preferred region
+   # Enter: Access Key, Secret Key, Region (us-west-2), Format (json)
    ```
 
-5. **Set up MCP configuration**
-   
-   The application uses `mcp-settings.json` for MCP server configuration:
-   ```json
-   {
-     "mcpServers": {
-       "github.com/awslabs/mcp/tree/main/src/aws-documentation-mcp-server": {
-         "command": "uvx",
-         "args": [
-           "awslabs.aws-documentation-mcp-server@latest"
-         ],
-         "env": {
-           "FASTMCP_LOG_LEVEL": "ERROR"
-         },
-         "disabled": false,
-         "autoApprove": [
-           "search_documentation",
-           "read_documentation"
-         ]
-       }
-     }
-   }
+5. **Start Application**
+   ```bash
+   streamlit run streamlit_app.py
    ```
-
-### Running the Application
-
-```bash
-# Start the Streamlit application
-streamlit run streamlit_app.py
-
-# The application will be available at http://localhost:8501
-```
+</details>
 
 ## 📖 Usage Guide
 
@@ -212,31 +243,43 @@ View the final generated presentation script with dynamic timing allocation and 
 - Advanced multi-agent workflow
 - Enhanced AWS knowledge integration
 - Parallel processing for complex presentations
-- Real-time MCP documentation retrieval
+- **Real-time MCP documentation retrieval**
+
+## 🧪 Testing and Validation
+
+### Automated Testing Suite
+
+```bash
+# Run all tests
+./manage.sh test
+
+# Individual test categories
+python tests/test_installation.py      # Installation verification
+python tests/test_mcp_connection.py    # MCP integration test
+python tests/test_mcp_integration.py   # Comprehensive MCP test
+python tests/test_script_generation.py # Script generation test
+python tests/run_tests.py             # Complete test runner
+```
+
+### Environment Validation
+
+```bash
+# Comprehensive environment check
+./manage.sh validate
+
+# Advanced validation with detailed report
+python scripts/validate_environment.py
+```
+
+### Test Categories
+
+- **Installation Tests**: Verify all components are properly installed
+- **MCP Integration Tests**: Test real-time AWS documentation retrieval
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: End-to-end workflow validation
+- **Performance Tests**: Caching and optimization validation
 
 ## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# AWS Configuration
-AWS_DEFAULT_REGION=us-west-2
-AWS_PROFILE=default
-
-# Bedrock Configuration
-BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20241022-v1:0
-
-# Application Settings
-LOG_LEVEL=INFO
-CACHE_TTL=3600
-MAX_WORKERS=4
-
-# MCP Configuration
-MCP_TIMEOUT=30
-MCP_LOG_LEVEL=ERROR
-```
 
 ### AWS Permissions
 
@@ -253,36 +296,90 @@ Required AWS IAM permissions:
         "bedrock:InvokeModelWithResponseStream"
       ],
       "Resource": [
-        "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-7-sonnet-*"
+        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-7-sonnet-*"
       ]
     }
   ]
 }
 ```
 
-## 🧪 Testing
+### Bedrock Model Access
 
-### Running Tests
+1. **Access AWS Console** → Navigate to AWS Bedrock service
+2. **Request Model Access** → Go to "Model access" and request access to "Anthropic Claude 3.7 Sonnet"
+3. **Wait for Approval** → Usually approved within 24 hours
+
+### Environment Configuration
+
+The application uses these configuration files:
+- **`.env`**: Environment variables (auto-generated during installation)
+- **`mcp-settings.json`**: MCP server configuration (auto-generated)
+- **`config/aws_config.py`**: AWS Bedrock client configuration
+- **`config/mcp_config.py`**: MCP client configuration
+
+## 🔍 Troubleshooting
+
+### Automated Problem Resolution
 
 ```bash
-# Run all tests
-python -m pytest tests/ -v
-
-# Run specific test suites
-python tests/test_mcp_integration.py      # MCP integration tests
-python tests/test_step5_script_generation.py  # Script generation tests
-python tests/test_integrated_mcp.py      # End-to-end MCP tests
-
-# Run with coverage
-python -m pytest tests/ --cov=src --cov-report=html
+# Automatic diagnosis and repair
+./manage.sh validate    # Identify issues
+./manage.sh repair      # Automatically fix common problems
+./manage.sh status      # Check current status
 ```
 
-### Test Categories
+### Common Issues and Solutions
 
-- **Unit Tests**: Individual component testing
-- **Integration Tests**: MCP and AWS service integration
-- **End-to-End Tests**: Complete workflow validation
-- **Performance Tests**: Caching and optimization validation
+#### Environment Issues
+```bash
+# Python version problems
+./manage.sh validate    # Check Python version
+# Follow installation guide for Python 3.10+
+
+# Missing dependencies
+./manage.sh repair      # Auto-install missing packages
+
+# Virtual environment issues
+./manage.sh install     # Recreate environment
+```
+
+#### AWS Configuration Issues
+```bash
+# AWS credentials not configured
+aws configure
+
+# Bedrock access issues
+aws bedrock list-foundation-models --region us-west-2
+
+# Region configuration
+export AWS_REGION=us-west-2
+```
+
+#### MCP Integration Issues
+```bash
+# Test MCP connection
+python tests/test_mcp_connection.py
+
+# Verify MCP server installation
+pip show awslabs-aws-documentation-mcp-server
+
+# Check MCP configuration
+cat mcp-settings.json
+```
+
+### Advanced Troubleshooting Tools
+
+```bash
+# Detailed environment validation
+python scripts/validate_environment.py
+
+# View comprehensive logs
+./manage.sh logs
+
+# Clean and reset environment
+./manage.sh clean
+./manage.sh install
+```
 
 ## 📊 Performance Optimization
 
@@ -302,54 +399,18 @@ The application implements multi-layer caching:
 - **MCP Response Time**: 3-8 seconds per AWS service query
 - **Memory Usage**: ~200-500MB during processing
 
-## 🔍 Troubleshooting
-
-### Common Issues
-
-#### MCP Connection Issues
-```bash
-# Test MCP server availability
-python tests/test_mcp_session.py
-
-# Check MCP configuration
-cat mcp-settings.json
-```
-
-#### AWS Bedrock Access
-```bash
-# Verify AWS credentials
-aws sts get-caller-identity
-
-# Test Bedrock access
-aws bedrock list-foundation-models --region us-west-2
-```
-
-#### Performance Issues
-- Enable caching in configuration
-- Reduce max_workers for memory-constrained environments
-- Use basic generation for faster results
-
-### Debug Mode
-
-Enable debug logging:
-```bash
-export LOG_LEVEL=DEBUG
-streamlit run streamlit_app.py
-```
-
 ## 🤝 Development
 
 ### Development Setup
 
-1. **Clone the repository and set up environment**
+1. **Clone and set up environment**
 2. **Install development dependencies**
    ```bash
-   cd tests
-   uv pip install -r requirements-dev.txt
+   pip install -r requirements-dev.txt
    ```
 3. **Run tests to verify setup**
    ```bash
-   python -m pytest tests/ -v
+   ./manage.sh test
    ```
 
 ### Code Quality Standards
@@ -365,6 +426,38 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Version**: 2.0.0  
-**Last Updated**: June 12, 2025  
+## 🆕 What's New in v2.1
+
+### ✨ **Advanced Environment Management**
+- **Comprehensive Management Tool**: `./manage.sh` with 15+ commands for complete lifecycle management
+- **Automated Environment Setup**: `scripts/setup_environment.sh` with OS detection and automatic dependency installation
+- **Intelligent Validation**: `scripts/validate_environment.py` with 8-point comprehensive environment checking
+- **Automatic Repair**: `scripts/repair_environment.py` for automatic issue resolution
+
+### 🧪 **Enhanced Testing and Validation**
+- **Comprehensive Test Suite**: Complete test coverage with automated test runner
+- **Real-time MCP Testing**: Live AWS Documentation MCP server connectivity testing
+- **Environment Validation**: Automated verification of all system components
+- **Performance Monitoring**: Built-in performance metrics and optimization tracking
+
+### 🔧 **Improved User Experience**
+- **One-Command Installation**: Complete setup with `./manage.sh install`
+- **Intelligent Problem Resolution**: Automatic diagnosis and repair of common issues
+- **Comprehensive Status Monitoring**: Real-time application and environment status
+- **Backup and Recovery**: Configuration backup and restore capabilities
+
+### 🚀 **Production-Ready Features**
+- **Advanced Error Handling**: Comprehensive error detection and recovery
+- **Logging and Monitoring**: Structured logging with multiple log levels
+- **Configuration Management**: Automated configuration file generation and validation
+- **Performance Optimization**: Multi-layer caching and optimization strategies
+
+---
+
+**Version**: 2.1.0  
+**Last Updated**: July 31, 2025  
 **Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet, AWS Documentation MCP Server
+
+**🔗 MCP Integration Status**: ✅ **ACTIVE** - Real-time AWS documentation retrieval enabled  
+**🛠️ Management Tools**: ✅ **ACTIVE** - Complete automated environment management  
+**🧪 Testing Suite**: ✅ **ACTIVE** - Comprehensive validation and testing framework

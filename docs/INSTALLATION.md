@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide provides detailed installation instructions for the AWS PowerPoint Script Generator.
+This guide provides detailed installation instructions for the AWS PowerPoint Script Generator with **real AWS Documentation MCP integration**.
 
 ## System Requirements
 
@@ -47,23 +47,7 @@ python3.10 --version
 3. Run installer with "Add Python to PATH" checked
 4. Verify in Command Prompt: `python --version` (should show 3.10+)
 
-### 2. UV Package Manager (Recommended)
-
-UV is a fast Python package manager that significantly improves installation speed.
-
-#### Installation
-```bash
-# macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Windows (PowerShell)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Verify installation
-uv --version
-```
-
-### 3. AWS CLI
+### 2. AWS CLI
 
 #### Installation
 ```bash
@@ -100,19 +84,6 @@ cd aws-pptx-script-generator
 
 ### 2. Create Virtual Environment
 
-#### Using UV (Recommended)
-```bash
-# Create virtual environment
-uv venv aws-venv
-
-# Activate environment
-# macOS/Linux:
-source aws-venv/bin/activate
-# Windows:
-aws-venv\Scripts\activate
-```
-
-#### Using Standard Python
 ```bash
 # Create virtual environment
 python -m venv aws-venv
@@ -126,59 +97,52 @@ aws-venv\Scripts\activate
 
 ### 3. Install Dependencies
 
-#### Using UV (Faster)
-```bash
-# Install all dependencies
-uv pip install -r requirements.txt
-
-# Install development dependencies (optional)
-uv pip install -r requirements-dev.txt
-```
-
-#### Using Pip
 ```bash
 # Upgrade pip first
 pip install --upgrade pip
 
-# Install dependencies
+# Install core dependencies
 pip install -r requirements.txt
+
+# Install AWS Documentation MCP Server (CRITICAL)
+pip install awslabs-aws-documentation-mcp-server
+
+# Install additional MCP client
+pip install python-mcp-client
+
+# Install pydantic-settings (if not already installed)
+pip install pydantic-settings
 ```
 
 ## AWS Documentation MCP Server Setup
 
 The application integrates with AWS Documentation MCP server for real-time AWS service information.
 
-### 1. Install MCP Server
-
-**Important**: The AWS Documentation MCP server requires Python 3.10 or higher.
+### 1. Verify MCP Server Installation
 
 ```bash
-# Verify Python version first (must be 3.10+)
-python --version
+# Check if MCP server is installed
+pip show awslabs-aws-documentation-mcp-server
 
-# Install globally using uvx
-uvx install awslabs.aws-documentation-mcp-server@latest
-
-# Verify installation
-uvx awslabs.aws-documentation-mcp-server@latest --help
+# Test MCP server can be imported
+python -c "from awslabs.aws_documentation_mcp_server.server import main; print('MCP server ready')"
 ```
-
-If you encounter Python version errors, ensure you have Python 3.10+ installed before proceeding.
 
 ### 2. Configure MCP Settings
 
-Create or verify `mcp-settings.json` in the project root:
+The `mcp-settings.json` file should already be configured correctly:
 
 ```json
 {
   "mcpServers": {
-    "github.com/awslabs/mcp/tree/main/src/aws-documentation-mcp-server": {
-      "command": "uvx",
+    "awslabs.aws-documentation-mcp-server": {
+      "command": "python",
       "args": [
-        "awslabs.aws-documentation-mcp-server@latest"
+        "-c", "from awslabs.aws_documentation_mcp_server.server import main; main()"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws"
       },
       "disabled": false,
       "autoApprove": [
@@ -195,7 +159,7 @@ Create or verify `mcp-settings.json` in the project root:
 
 ```bash
 # Run MCP integration test
-python tests/test_mcp_session.py
+python tests/test_mcp_connection.py
 
 # Expected output should show successful connection and tool discovery
 ```
@@ -204,23 +168,9 @@ python tests/test_mcp_session.py
 
 ### 1. Enable Claude 3.7 Sonnet
 
-1. **Access AWS Console**
-   - Navigate to AWS Bedrock service
-   - Go to "Model access" in the left sidebar
-
-2. **Request Model Access**
-   - Find "Anthropic Claude 3.7 Sonnet"
-   - Click "Request model access"
-   - Fill out the access request form
-   - Wait for approval (usually within 24 hours)
-
-3. **Verify Access**
-   ```bash
-   # List available models
-   aws bedrock list-foundation-models --region us-west-2
-   
-   # Look for: anthropic.claude-3-7-sonnet-20241022-v1:0
-   ```
+1. **Access AWS Console** → Navigate to AWS Bedrock service
+2. **Request Model Access** → Go to "Model access" and request access to "Anthropic Claude 3.7 Sonnet"
+3. **Wait for Approval** → Usually approved within 24 hours
 
 ### 2. Set Up IAM Permissions
 
@@ -237,7 +187,7 @@ Create an IAM policy with the following permissions:
         "bedrock:InvokeModelWithResponseStream"
       ],
       "Resource": [
-        "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-7-sonnet-*"
+        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-7-sonnet-*"
       ]
     }
   ]
@@ -255,10 +205,11 @@ Create a `.env` file in the project root:
 ```env
 # AWS Configuration
 AWS_DEFAULT_REGION=us-west-2
+AWS_REGION=us-west-2
 AWS_PROFILE=default
 
 # Bedrock Configuration
-BEDROCK_MODEL_ID=anthropic.claude-3-7-sonnet-20241022-v1:0
+BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20250219-v1:0
 
 # Application Settings
 LOG_LEVEL=INFO
@@ -276,7 +227,6 @@ The application uses `config/` directory for configuration files:
 
 - `aws_config.py`: AWS Bedrock client configuration
 - `mcp_config.py`: MCP client configuration
-- `app_config.py`: General application settings
 
 ## Verification
 
@@ -284,16 +234,16 @@ The application uses `config/` directory for configuration files:
 
 ```bash
 # Test basic functionality
-python tests/test_basic.py
-
-# Test AWS integration
-python tests/test_integration.py
+python tests/test_installation.py
 
 # Test MCP integration
+python tests/test_mcp_connection.py
+
+# Test complete integration
 python tests/test_mcp_integration.py
 
-# Test script generation
-python tests/test_step5_script_generation.py
+# Run all tests
+python tests/run_tests.py
 ```
 
 ### 2. Start Application
@@ -326,10 +276,12 @@ python --version
 # Follow Python installation steps above
 ```
 
-#### UV Installation Issues
+#### Missing Dependencies
 ```bash
-# If UV fails, use pip instead
+# Install missing packages
 pip install -r requirements.txt
+pip install awslabs-aws-documentation-mcp-server
+pip install pydantic-settings
 ```
 
 #### AWS Credentials Issues
@@ -344,10 +296,13 @@ aws configure
 #### MCP Server Issues
 ```bash
 # Test MCP server directly
-uvx awslabs.aws-documentation-mcp-server@latest
+python -c "from awslabs.aws_documentation_mcp_server.server import main; print('MCP server can be imported')"
 
 # Check MCP configuration
 cat mcp-settings.json
+
+# Test MCP connection
+python tests/test_mcp_connection.py
 ```
 
 #### Bedrock Access Issues
@@ -358,7 +313,20 @@ aws bedrock list-foundation-models --region us-west-2
 # If Claude not listed, request access in AWS Console
 ```
 
-### Performance Optimization
+#### Environment Variable Issues
+```bash
+# Check if .env file exists
+ls -la .env
+
+# Verify environment variables
+cat .env
+
+# Set environment variables manually if needed
+export AWS_REGION=us-west-2
+export AWS_DEFAULT_REGION=us-west-2
+```
+
+### Performance Issues
 
 #### Memory Issues
 ```bash
@@ -378,11 +346,42 @@ CACHE_TTL=7200
 # Ensure adequate RAM (8GB+)
 ```
 
+### MCP-Specific Troubleshooting
+
+#### MCP Server Not Starting
+```bash
+# Check Python version (must be 3.10+)
+python --version
+
+# Verify MCP server installation
+pip show awslabs-aws-documentation-mcp-server
+
+# Test server import
+python -c "from awslabs.aws_documentation_mcp_server.server import main; main()" --help
+```
+
+#### MCP Connection Timeout
+```bash
+# Increase timeout in .env
+MCP_TIMEOUT=60
+
+# Check network connectivity
+ping docs.aws.amazon.com
+```
+
+#### MCP Tools Not Available
+```bash
+# Check MCP configuration
+python tests/test_mcp_connection.py
+
+# Verify autoApprove settings in mcp-settings.json
+```
+
 ## Next Steps
 
 After successful installation:
 
-1. **Read the [Usage Guide](../FINAL_README.md#usage-guide)**
+1. **Read the [Usage Guide](../README.md#usage-guide)**
 2. **Try the example presentations in `examples/`**
 3. **Explore advanced configuration options**
 4. **Set up monitoring and logging**
@@ -394,10 +393,10 @@ If you encounter issues during installation:
 1. **Check the [Troubleshooting](#troubleshooting) section**
 2. **Review log files in `logs/` directory**
 3. **Run diagnostic tests in `tests/` directory**
-4. **Create an issue in the GitLab repository**
+4. **Create an issue in the GitHub repository**
 
 ---
 
 **Installation Guide Version**: 2.0.0  
-**Last Updated**: December 2024  
-**Compatibility**: Python 3.10+ (required), AWS Bedrock, MCP 2024-11-05
+**Last Updated**: July 31, 2025  
+**Compatibility**: Python 3.10+ (required), AWS Bedrock, Claude 3.7 Sonnet, AWS Documentation MCP Server

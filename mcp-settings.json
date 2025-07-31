@@ -1,17 +1,19 @@
 {
   "mcpServers": {
-    "github.com/awslabs/mcp/tree/main/src/aws-documentation-mcp-server": {
-      "command": "uvx",
+    "awslabs.aws-documentation-mcp-server": {
+      "command": "python",
       "args": [
-        "awslabs.aws-documentation-mcp-server@latest"
+        "-c", "from awslabs.aws_documentation_mcp_server.server import main; main()"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws"
       },
       "disabled": false,
       "autoApprove": [
         "search_documentation",
-        "read_documentation"
+        "read_documentation",
+        "recommend"
       ]
     }
   }
