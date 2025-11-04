@@ -1,6 +1,6 @@
 # AWS PowerPoint Script Generator
 
-An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude 3.7 Sonnet with advanced caching and **real-time AWS Documentation MCP integration**.
+An intelligent presentation script generator that analyzes PowerPoint slides and creates natural, professional presentation scripts using AWS Bedrock and Claude Sonnet 4.5 with advanced caching and **real-time AWS Documentation MCP integration**.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-orange.svg)](https://aws.amazon.com/bedrock/)
@@ -54,7 +54,7 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 - **Technical Complexity Assessment**: Evaluates presentation difficulty level
 
 ### 🧠 AI-Powered Script Generation
-- **Claude 3.7 Sonnet Integration**: Advanced language model for natural script creation
+- **Claude Sonnet 4.5 Integration**: Advanced language model for natural script creation
 - **Prompt Caching**: Optimized performance with intelligent caching strategies
 - **Persona-Aware Generation**: Adapts to presenter's style and confidence level
 - **Slide Flow Continuity**: Ensures smooth transitions between slides
@@ -70,6 +70,12 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 - **Timing Guidance**: Precise timing recommendations for each slide
 - **Speaker Notes**: Detailed presentation tips and guidance
 - **Q&A Preparation**: Anticipated questions and suggested answers
+
+### 🖥️ Dual Interface Modes
+- **Web UI Mode**: Interactive Streamlit interface with visual feedback and step-by-step wizard
+- **CLI Mode**: Command-line interface for automation, scripting, and batch processing
+- **Flexible Workflow**: Choose the mode that fits your workflow - GUI for exploration, CLI for automation
+- **Consistent Results**: Both modes use identical processing logic and produce same quality output
 
 ## 🏗️ Architecture
 
@@ -91,7 +97,7 @@ The AWS PowerPoint Script Generator addresses these challenges through an intell
 
 ### Technology Stack
 - **Frontend**: Streamlit with responsive UI components
-- **AI Models**: Claude 3.7 Sonnet via AWS Bedrock
+- **AI Models**: Claude Sonnet 4.5 via AWS Bedrock
 - **Document Processing**: python-pptx, Pillow for image processing
 - **MCP Integration**: Real-time AWS Documentation MCP server client
 - **Caching**: Multi-layer caching with TTL management
@@ -197,15 +203,141 @@ The `manage.sh` script provides comprehensive project management:
    # Enter: Access Key, Secret Key, Region (us-west-2), Format (json)
    ```
 
-5. **Start Application**
+5. **Run Application**
+
+   **Option A: Web UI Mode (Interactive)**
    ```bash
    streamlit run streamlit_app.py
+   ```
+
+   **Option B: CLI Mode (Command-line)**
+   ```bash
+   python gen_script.py --pptx your_presentation.pptx --name "Your Name"
    ```
 </details>
 
 ## 📖 Usage Guide
 
-### Step-by-Step Process
+### Two Usage Modes
+
+The application supports **two usage modes**:
+
+1. **Web UI Mode (Streamlit)**: Interactive web interface with visual feedback
+2. **CLI Mode (Terminal)**: Command-line interface for automation and scripting
+
+### CLI Mode (Terminal)
+
+Generate scripts directly from the command line without launching the web UI.
+
+#### Basic Usage
+
+```bash
+# Simplest usage with defaults
+python gen_script.py --pptx presentation.pptx
+
+# With presenter name and duration
+python gen_script.py --pptx sample.pptx --name "Jesam Kim" --duration 30
+
+# Korean language script
+python gen_script.py --pptx sample.pptx --name "김제삼" --language Korean --duration 45
+```
+
+#### Full Configuration Example
+
+```bash
+python gen_script.py \
+  --pptx ./presentations/aws-summit.pptx \
+  --name "Jesam Kim" \
+  --title "Senior Solutions Architect" \
+  --company "AWS" \
+  --experience Senior \
+  --confidence Experienced \
+  --style Conversational \
+  --language Korean \
+  --duration 30 \
+  --audience Technical \
+  --pres-style Professional \
+  --technical-depth 4 \
+  --include-qa \
+  --qa-duration 10 \
+  --output my_presentation_script.md \
+  --mode optimized
+```
+
+#### CLI Parameters
+
+**Required:**
+- `--pptx`: Path to PowerPoint file
+
+**Presenter Information:**
+- `--name`: Presenter name (default: "Presenter")
+- `--title`: Job title (default: "Solutions Architect")
+- `--company`: Company name (default: "AWS")
+- `--experience`: Junior | Mid-level | Senior | Expert (default: Senior)
+- `--confidence`: Beginner | Comfortable | Experienced | Expert (default: Comfortable)
+- `--style`: Formal | Conversational | Interactive | Q&A Focused (default: Conversational)
+
+**Presentation Settings:**
+- `--language`: English | Korean (default: English)
+- `--duration`: Total minutes (default: 30)
+- `--audience`: Technical | Business | Mixed | Executive (default: Technical)
+- `--pres-style`: Professional | Conversational | Technical | Educational (default: Professional)
+- `--technical-depth`: 1-5 (default: 3)
+- `--time-per-slide`: Average time per slide in minutes (default: 2.0)
+- `--include-qa`: Include Q&A section (default: enabled)
+- `--no-qa`: Exclude Q&A section
+- `--qa-duration`: Q&A minutes (default: 10)
+
+**Output Settings:**
+- `--output`: Output file path (default: output_script.md)
+- `--mode`: cached (faster) | optimized (better quality) (default: cached)
+- `--verbose, -v`: Enable verbose output
+- `--quiet, -q`: Suppress all output except errors
+
+#### CLI Output Example
+
+```
+============================================================
+Step 1/3: Analyzing PowerPoint Presentation
+============================================================
+INFO     | Loading PowerPoint file: sample.pptx
+INFO     | Processing PowerPoint file...
+INFO     | Converting slides to images for multimodal analysis...
+INFO     | Analyzing presentation content with Claude Sonnet 4.5...
+INFO     | Generating analysis summary...
+SUCCESS  | Analysis completed: 15 slides analyzed
+
+============================================================
+Step 2/3: Preparing Script Generation Parameters
+============================================================
+INFO     | Presenter: Jesam Kim (Senior Solutions Architect)
+INFO     | Language: Korean, Duration: 30 min
+INFO     | Mode: CACHED
+
+============================================================
+Step 3/3: Generating Presentation Script
+============================================================
+INFO     | Generating script using cached mode...
+SUCCESS  | Script generated: 5234 characters
+SUCCESS  | Script saved to: output_script.md
+
+============================================================
+Script Generation Completed Successfully!
+============================================================
+SUCCESS  | Output file: output_script.md
+SUCCESS  | Script length: 5234 characters
+SUCCESS  | Word count: 876 words
+```
+
+#### View Help
+
+```bash
+python gen_script.py --help
+```
+
+### Web UI Mode (Streamlit)
+
+#### Step-by-Step Process
 
 #### 1. Upload PowerPoint File
 Upload your .pptx file using the drag-and-drop interface or file uploader.
@@ -296,7 +428,7 @@ Required AWS IAM permissions:
         "bedrock:InvokeModelWithResponseStream"
       ],
       "Resource": [
-        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-7-sonnet-*"
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-5-*"
       ]
     }
   ]
@@ -305,9 +437,7 @@ Required AWS IAM permissions:
 
 ### Bedrock Model Access
 
-1. **Access AWS Console** → Navigate to AWS Bedrock service
-2. **Request Model Access** → Go to "Model access" and request access to "Anthropic Claude 3.7 Sonnet"
-3. **Wait for Approval** → Usually approved within 24 hours
+Claude Sonnet 4.5 is available directly through Amazon Bedrock without requiring separate model access approval. Simply ensure your AWS account has Bedrock permissions configured.
 
 ### Environment Configuration
 
@@ -454,9 +584,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Version**: 2.1.0  
-**Last Updated**: July 31, 2025  
-**Compatibility**: Python 3.10+, AWS Bedrock, Claude 3.7 Sonnet, AWS Documentation MCP Server
+**Version**: 2.1.1
+**Last Updated**: November 4, 2025
+**Compatibility**: Python 3.10+, AWS Bedrock, Claude Sonnet 4.5, AWS Documentation MCP Server
 
 **🔗 MCP Integration Status**: ✅ **ACTIVE** - Real-time AWS documentation retrieval enabled  
 **🛠️ Management Tools**: ✅ **ACTIVE** - Complete automated environment management  
