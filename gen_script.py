@@ -8,7 +8,7 @@ professional presentation scripts using Claude Sonnet 4.5.
 Usage:
     python gen_script.py --pptx sample.pptx --name "Jesam Kim" --duration 30
 
-Author: AWS SA Team
+Author: Jesam Kim (AWS SA)
 Version: 2.1.1
 """
 
