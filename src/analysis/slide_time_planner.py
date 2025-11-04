@@ -245,8 +245,7 @@ Analyze each slide carefully and provide thoughtful time allocations."""
                 messages=messages,
                 inferenceConfig={
                     "maxTokens": 4000,
-                    "temperature": 0.3,  # Lower temperature for more consistent planning
-                    "topP": 0.9
+                    "temperature": 0.3  # Lower temperature for more consistent planning
                 }
             )
             

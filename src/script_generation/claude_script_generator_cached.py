@@ -291,8 +291,7 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
                     messages=messages,
                     inferenceConfig={
                         "maxTokens": max_tokens,
-                        "temperature": 0.7,
-                        "topP": 0.9
+                        "temperature": 0.7
                     }
                 )
                 
@@ -333,7 +332,6 @@ You are a professional AWS Solutions Architect and expert at creating natural pr
                     ],
                     "max_tokens": max_tokens,
                     "temperature": 0.7,
-                    "top_p": 0.9,
                     "anthropic_version": "bedrock-2023-05-31"
                 }
                 
@@ -657,8 +655,7 @@ Format the output as:
                     messages=messages,
                     inferenceConfig={
                         "maxTokens": max_tokens,
-                        "temperature": 0.7,
-                        "topP": 0.9
+                        "temperature": 0.7
                     }
                 )
                 

@@ -14,8 +14,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from loguru import logger
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+# Optional MCP integration - gracefully handle missing package
+try:
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    MCP_AVAILABLE = True
+except ImportError:
+    logger.warning("MCP package not installed. MCP integration will be disabled.")
+    MCP_AVAILABLE = False
+    ClientSession = None
+    StdioServerParameters = None
+    stdio_client = None
 
 
 @dataclass
@@ -36,15 +45,20 @@ class RealMCPClient:
     
     def __init__(self, config_path: str = "mcp-settings.json"):
         """Initialize real MCP client.
-        
+
         Args:
             config_path: Path to MCP configuration file
         """
+        self.mcp_available = MCP_AVAILABLE
         self.config_path = config_path
-        self.server_config = self._load_server_config()
+        self.server_config = self._load_server_config() if MCP_AVAILABLE else None
         self.session = None
         self._tools_cache = {}
-        logger.info("Initialized Real MCP Client")
+
+        if not MCP_AVAILABLE:
+            logger.warning("MCP integration disabled - package not installed")
+        else:
+            logger.info("Initialized Real MCP Client")
     
     def _load_server_config(self) -> Optional[MCPServerConfig]:
         """Load MCP server configuration from file.
@@ -376,6 +390,7 @@ class SyncMCPClient:
     def __init__(self, config_path: str = "mcp-settings.json"):
         """Initialize sync MCP client."""
         self.async_client = RealMCPClient(config_path)
+        self.mcp_available = MCP_AVAILABLE
     
     def _run_async(self, coro):
         """Run async coroutine in sync context."""
@@ -389,24 +404,36 @@ class SyncMCPClient:
     
     def search_documentation(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Sync version of search_documentation."""
+        if not self.mcp_available:
+            return []
         return self._run_async(self.async_client.search_documentation(query, limit))
-    
+
     def read_documentation(self, url: str, max_length: int = 5000) -> Optional[str]:
         """Sync version of read_documentation."""
+        if not self.mcp_available:
+            return None
         return self._run_async(self.async_client.read_documentation(url, max_length))
-    
+
     def get_service_documentation(self, service_name: str) -> Optional[Dict[str, Any]]:
         """Sync version of get_service_documentation."""
+        if not self.mcp_available:
+            return None
         return self._run_async(self.async_client.get_service_documentation(service_name))
     
     def get_best_practices(self, service_name: str) -> List[str]:
         """Sync version of get_best_practices."""
+        if not self.mcp_available:
+            return []
         return self._run_async(self.async_client.get_best_practices(service_name))
     
     def is_available(self) -> bool:
         """Check if MCP server is available."""
+        if not self.mcp_available:
+            return False
         return self.async_client.is_available()
     
     def test_connection(self) -> bool:
         """Test connection to MCP server."""
+        if not self.mcp_available:
+            return False
         return self._run_async(self.async_client.test_connection())
