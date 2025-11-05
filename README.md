@@ -260,8 +260,7 @@ python gen_script.py \
   --technical-depth 4 \
   --include-qa \
   --qa-duration 10 \
-  --output my_presentation_script.md \
-  --mode optimized
+  --output my_presentation_script.md
 ```
 
 #### CLI Parameters
@@ -290,7 +289,6 @@ python gen_script.py \
 
 **Output Settings:**
 - `--output`: Output file path (default: output_script.md)
-- `--mode`: cached (faster) | optimized (better quality) (default: cached)
 - `--verbose, -v`: Enable verbose output
 - `--quiet, -q`: Suppress all output except errors
 

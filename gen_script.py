@@ -314,7 +314,15 @@ class CLIScriptGenerator:
                 logger.success(f"Optimized script generated: {len(result.script_content)} characters")
                 return result.script_content
             else:
-                logger.error(f"Optimized script generation failed: {result.metadata.get('error', 'Unknown error')}")
+                logger.error(f"Optimized script generation failed!")
+                logger.error(f"Error: {result.metadata.get('error', 'Unknown error')}")
+                logger.error(f"Workflow status: {result.metadata.get('workflow_status', 'Unknown')}")
+                logger.error(f"Full metadata: {result.metadata}")
+
+                # If verbose mode, print performance metrics too
+                if result.performance_metrics:
+                    logger.debug(f"Performance metrics: {result.performance_metrics}")
+
                 return None
 
         except Exception as e:
